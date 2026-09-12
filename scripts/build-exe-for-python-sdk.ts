@@ -24,6 +24,8 @@ const OUTPUT_BASENAME = 'deepseek-harness-sdk-runtime'
 /** Default Node major; SEA mode requires at least Node 22. */
 const DEFAULT_NODE_RANGE = 'node24'
 const OUT_DIR = 'dist-exe'
+/** Repository-pinned pkg entrypoint; direct execution avoids pnpm implicitly reinstalling the root. */
+const PKG_BIN = resolve(root, 'node_modules/@yao-pkg/pkg/lib-es5/bin.js')
 /** Python package destination; created when absent. */
 const PYTHON_RUNTIME_DIR = 'python/sdk-runtime/src/deepseek_harness_runtime/runtime'
 /** The deployed closure doubles as the node-mode carrier. */
@@ -425,9 +427,11 @@ class SingleExeBuild {
     const product = target.platform === 'win' ? `${productBase}.exe` : productBase
     await this.prepareNativePty(target)
     if (!this.cli.dryRun) await mkdir(this.outDir, { recursive: true })
-    await this.runPnpm(`pkg ${target.spec}`, [
-      'exec',
-      'pkg',
+    if (!this.cli.dryRun && !existsSync(PKG_BIN)) {
+      throw new Error(`build-exe-for-python-sdk: repository pkg entrypoint is missing at ${PKG_BIN}; run pnpm install.`)
+    }
+    await this.run(`pkg ${target.spec}`, process.execPath, [
+      PKG_BIN,
       this.staging,
       '--sea',
       '--targets',

@@ -10,7 +10,7 @@ DeepSeek Harness can run from source, as a packaged Desktop application, and thr
 
 The intended product is a student-maintained learning and exchange artifact sold at low margin through an informal marketplace. It needs an honest, bounded promise instead of enterprise licensing, continuous update infrastructure, expensive release signing, arbitrary-project support, or a guarantee that a model completes every task.
 
-No product code, packaging output, test fixture, or user documentation described by this proposal exists as of 2026-09-11. This note records the agreed design for a later implementation session.
+The first protocol-and-carrier milestone is implemented in the private `apps/portable` workspace and recorded in [Portable product metadata and SEA carrier](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.md). The consumer product, launcher, installation and repair flows, media tooling, offline DevKit, and sale qualification described by this note remain proposed.
 
 ## Proposal
 
@@ -95,7 +95,9 @@ Immutable program, recovery, source, documentation, and license files are manife
 
 ### Implementation sequence
 
-1. Record the product configuration schema, distribution manifest, filesystem ownership rules, threat limits, and acceptance-test harness.
+Sequence item 1 is implemented by the protocol-and-carrier milestone linked above. Items 2 through 7 remain proposed.
+
+1. Record the product configuration schema, distribution manifest, filesystem ownership rules, threat limits, and acceptance-test harness. **Implemented.**
 2. Add publisher branding and the reduced consumer composition without changing the underlying client extension contracts.
 3. Add the Windows launcher, portable run, per-user install, uninstall, and explicit state-root selection.
 4. Add full-media preparation, integrity verification, backup, same-version repair, and recovery behavior.
@@ -138,7 +140,7 @@ Each milestone includes its code, focused tests, user-visible snapshots where re
 - Media preparation verifies a 16 GB target, writes only an explicitly selected removable volume, validates every manifest-owned byte after copying, and refuses an insufficient, corrupt, or unexpected target without formatting another disk.
 - Repair, low-space, drive-letter change, slow-media staging, interrupted copy, unexpected removal, and unsupported-tool failures produce localized explanations and a recovery action. No test claims that unexpected removal preserves unflushed work.
 - The release includes corresponding source, modifications, build identity, checksums, license, third-party notices, privacy and safety disclosures, the 30-day support boundary, and the fixed-version/no-update policy.
-- Release qualification runs the complete matrix before sale. No business code or user documentation is considered implemented merely because this proposal exists.
+- Release qualification runs the complete matrix before sale. Only code and documentation owned by an implemented Agent Note are current implementation; the complete product is not implemented merely because this proposal exists.
 
 ## Risks
 

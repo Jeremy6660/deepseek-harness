@@ -1,0 +1,34 @@
+{
+  "name": "@deepseek-ai/dsh-portable",
+  "description": "Private build tooling for the Portable Agent Lab USB distribution",
+  "version": "0.1.5-rc.2",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "bin": {
+    "dsh-portable": "lib/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b && tsdown",
+    "compare:carriers": "tsx scripts/compare-carriers.ts"
+  },
+  "dependencies": {
+    "js-yaml": "^4.2.0",
+    "semver": "^7.8.5"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/semver": "^7.7.1",
+    "tsdown": "^0.22.2",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

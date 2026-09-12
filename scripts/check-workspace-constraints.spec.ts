@@ -1,13 +1,20 @@
 /** Experimental-package publication and dependency constraints. */
 
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   checkDshFamilyVersion,
   checkExperimentalDependencyIsolation,
   checkExperimentalManifest,
+  checkWorkspaceManifest,
   expectedDshPackageFiles,
   type WorkspaceManifest,
 } from './check-workspace-constraints.ts'
+
+const repositoryVersion = (JSON.parse(
+  readFileSync(resolve(import.meta.dirname, '../package.json'), 'utf8'),
+) as { version: string }).version
 
 const experimental: WorkspaceManifest = {
   dir: 'packages/experimental/prototype',
@@ -128,6 +135,20 @@ describe('dsh family version coherence', () => {
       '0.1.2-rc.1',
     )).toBeUndefined()
     expect(checkDshFamilyVersion({ version: '0.1.2-alpha.5' }, '0.1.2-rc.1')).toBeUndefined()
+  })
+})
+
+describe('private product applications', () => {
+  it('keeps portable build tooling out of the npm release family', () => {
+    expect(checkWorkspaceManifest({
+      dir: 'apps/portable',
+      manifest: {
+        name: '@deepseek-ai/dsh-portable',
+        version: repositoryVersion,
+        private: true,
+        type: 'module',
+      },
+    })).toEqual([])
   })
 })
 

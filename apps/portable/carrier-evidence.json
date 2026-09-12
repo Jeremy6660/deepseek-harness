@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "target": {
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "selectedCarrier": "sea",
+  "sea": {
+    "bytes": 246261760,
+    "files": 2,
+    "smoke": {
+      "pathIsolated": true,
+      "stateFiles": 1679
+    },
+    "launch": "dsh web --no-open --port 0",
+    "repairUnit": "file"
+  },
+  "desktop": {
+    "bytes": 616488582,
+    "files": 11734,
+    "launch": "Electron shell",
+    "repairUnit": "file tree"
+  }
+}
