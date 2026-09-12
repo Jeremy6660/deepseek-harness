@@ -71,7 +71,7 @@ TypeScript API 从 `@deepseek-ai/dsh-portable` 导出相同的配置、路径策
 
 ## Windows 载体证据
 
-v1 载体是现有 `@yao-pkg/pkg --sea` Windows x64 可执行文件及其必需的 `-rg.exe` sidecar。载体样机在系统 Node.js 和 Python 均不可用的环境中，以隔离的临时 `DSH_HOME`、`--no-open` 和动态端口构建并启动它；验证范围包括带认证信息的启动 URL、令牌交换、Web 启动数据、JavaScript 与 CSS 资产、干净的生命周期释放、退出码 0，以及状态只写入临时 home。
+v1 载体是现有 `@yao-pkg/pkg --sea` Windows x64 可执行文件及其必需的 `-rg.exe` sidecar。载体样机在系统 Node.js 和 Python 均不可用的环境中，以隔离的临时 `DSH_HOME`、`--no-open` 和动态端口启动一个已经构建好的可执行文件；验证范围包括带认证信息的启动 URL、令牌交换、Web 启动数据、JavaScript 与 CSS 资产、干净的生命周期释放、退出码 0，以及状态只写入临时 home。
 
 [carrier-evidence.json](carrier-evidence.json) 中的对比记录：SEA 载体为 246,261,760 字节、2 个文件，以 `dsh web --no-open --port 0` 启动；对应的 Desktop 解包样本为 616,488,582 字节、11,734 个文件，通过 Electron 壳启动。因此 v1 固定采用 SEA；Desktop 只作为确定性文件树处理的实现参考，不作为产品壳。
 

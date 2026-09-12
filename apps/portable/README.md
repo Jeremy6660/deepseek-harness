@@ -71,7 +71,7 @@ The TypeScript API exports the same configuration, path-policy, sealing, and ver
 
 ## Windows carrier evidence
 
-The v1 carrier is the existing `@yao-pkg/pkg --sea` Windows x64 executable plus its required `-rg.exe` sidecar. The carrier probe builds and launches it with no system Node.js or Python available, an isolated temporary `DSH_HOME`, `--no-open`, and a dynamic port. It verifies the authenticated launch URL, token exchange, Web bootstrap, JavaScript and CSS assets, clean lifecycle disposal, exit code 0, and that state remains inside the temporary home.
+The v1 carrier is the existing `@yao-pkg/pkg --sea` Windows x64 executable plus its required `-rg.exe` sidecar. The carrier probe launches an already built executable with no system Node.js or Python available, an isolated temporary `DSH_HOME`, `--no-open`, and a dynamic port. It verifies the authenticated launch URL, token exchange, Web bootstrap, JavaScript and CSS assets, clean lifecycle disposal, exit code 0, and that state remains inside the temporary home.
 
 The recorded comparison in [carrier-evidence.json](carrier-evidence.json) measures the SEA carrier at 246,261,760 bytes and 2 files, launched as `dsh web --no-open --port 0`. The matching unpacked Desktop sample measures 616,488,582 bytes and 11,734 files, launched through an Electron shell. SEA is therefore fixed as the v1 carrier; Desktop remains an implementation reference for deterministic file-tree handling, not a product shell.
 

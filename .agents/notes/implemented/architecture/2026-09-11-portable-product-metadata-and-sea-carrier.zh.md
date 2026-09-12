@@ -32,7 +32,7 @@ Status: implemented
 
 ### 载体证据
 
-Windows x64 载体样机先构建现有 `@yao-pkg/pkg --sea` 可执行文件，再以空的可执行程序搜索路径、临时 `DSH_HOME`、临时缓存和用户配置根目录启动 `dsh web --no-open --port 0`。样机会确认系统 Node.js 和 Python 未参与运行、CLI 输出带认证信息的启动 URL、令牌交换和 Cookie 认证成功、根页面包含 Web 启动数据、JavaScript 与 CSS 资产可加载、关闭时 Host 生命周期已释放且退出码为 0，并且观察到的全部状态都位于临时 home。
+Windows x64 载体样机以空的可执行程序搜索路径、临时 `DSH_HOME`、临时缓存和用户配置根目录，将已经构建好的现有 `@yao-pkg/pkg --sea` 可执行文件作为 `dsh web --no-open --port 0` 启动。样机会确认系统 Node.js 和 Python 未参与运行、CLI 输出带认证信息的启动 URL、令牌交换和 Cookie 认证成功、根页面包含 Web 启动数据、JavaScript 与 CSS 资产可加载、关闭时 Host 生命周期已释放且退出码为 0，并且观察到的全部状态都位于临时 home。
 
 仓库中的[载体证据](../../../../apps/portable/carrier-evidence.json)记录：SEA 可执行文件及必需的 `-rg.exe` sidecar 共 246,261,760 字节、2 个文件；同一台机器上的 Desktop 解包参考为 616,488,582 字节、11,734 个文件，并通过 Electron 壳启动。SEA 通过 `dsh web` 启动，修复单位为文件，因此被固定为 v1 载体。Desktop 继续作为确定性运行时文件树算法的参考，而不是备用产品壳。SEA 构建路径通过当前 Node 进程调用固定版本的 `@yao-pkg/pkg` 入口，避免封装过程改变仓库依赖布局；SDK runtime 也显式声明了运行时加载的 session-title 包。
 
