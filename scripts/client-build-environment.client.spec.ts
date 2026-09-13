@@ -9,6 +9,7 @@ import {
   clientBuildEnvironmentDefines,
   clientBuildProcessEnvironment,
   officialClientBuildEnvironment,
+  productClientBuildEnvironment,
   readClientBuildRecord,
   repositoryClientBuildEnvironment,
   repositoryCommitHash,
@@ -139,6 +140,49 @@ describe('client build environment', () => {
       DSH_CLIENT_VERSION: '1.2.3',
     })
     expect(repositoryCommitHash('/unused', { DSH_CLIENT_COMMIT_HASH: COMMIT_HASH })).toBe(COMMIT_HASH.slice(0, 7))
+  })
+
+  it('resolves an exact publisher-branded product environment', () => {
+    const product = {
+      DSH_CLIENT_TITLE: '便携智能体实验盘',
+      DSH_CLIENT_TITLE_EN: 'Portable Agent Lab USB',
+      DSH_CLIENT_TITLE_ZH: '便携智能体实验盘',
+      DSH_CLIENT_WELCOME_EN: 'Welcome to your portable agent lab.',
+      DSH_CLIENT_WELCOME_ZH: '欢迎使用便携智能体实验盘。',
+      DSH_CLIENT_ATTRIBUTION_EN: 'Unofficial; not published by DeepSeek.',
+      DSH_CLIENT_ATTRIBUTION_ZH: '非官方；非 DeepSeek 发布。',
+      DSH_CLIENT_SUPPORT_EN: 'Contact the publisher.',
+      DSH_CLIENT_SUPPORT_ZH: '请联系发布者。',
+      DSH_CLIENT_PRIMARY_LIGHT: '#3366CC',
+      DSH_CLIENT_PRIMARY_DARK: '#6699FF',
+      DSH_CLIENT_LOGO: 'data:image/png;base64,iVBORw0KGgo=',
+      DSH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
+      DSH_CLIENT_VERSION: '1.0.0',
+    }
+
+    expect(productClientBuildEnvironment(product)).toEqual({
+      DSH_CLIENT_BUILD_PROFILE: 'product',
+      ...product,
+    })
+    expect(resolveClientBuildEnvironment({ DSH_BUILD_CLIENT_PROFILE: 'product', ...product })).toEqual({
+      DSH_CLIENT_BUILD_PROFILE: 'product',
+      ...product,
+    })
+    expect(resolveClientBuildEnvironment({ ...product }, 'product')).toEqual({
+      DSH_CLIENT_BUILD_PROFILE: 'product',
+      ...product,
+    })
+
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_WELCOME_EN: '' }) })
+      .toThrow(/DSH_CLIENT_WELCOME_EN/)
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_PRIMARY_LIGHT: 'red' }) })
+      .toThrow(/#RRGGBB/)
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_LOGO: 'https://example.com/logo.png' }) })
+      .toThrow(/data URI/)
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_COMMIT_HASH: 'not-a-hash' }) })
+      .toThrow(/commit hash/)
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_VERSION: 'current' }) })
+      .toThrow(/semantic version/)
   })
 
   it('owns repository version, commit, and dirty metadata for complete builds', () => {

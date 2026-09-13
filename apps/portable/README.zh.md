@@ -63,7 +63,10 @@ pnpm --filter @deepseek-ai/dsh-portable run build
 node apps/portable/lib/cli.js validate-product --root C:\absolute\staging
 node apps/portable/lib/cli.js seal --root C:\absolute\staging
 node apps/portable/lib/cli.js verify --root C:\absolute\staging
+node apps/portable/lib/cli.js client-env --root C:\absolute\staging
 ```
+
+`client-env` 会输出发布方的 `DSH_CLIENT_*` 值，即 `product` 客户端构建 profile 内联的 14 键对象；它是从已校验元数据通往品牌化构建的桥梁。构建客户端时导出这些值并选择 `DSH_BUILD_CLIENT_PROFILE=product`。
 
 成功命令和验证报告会在标准输出写出单行 JSON。验证发现差异时退出码为 1；命令、清单、配置、根目录或危险路径无效时，在标准错误写出 JSON 错误并以退出码 2 结束。
 
@@ -83,6 +86,8 @@ node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolut
 
 ## 里程碑边界
 
-本工作区交付面向 Windows 10/11 x64 与 NTFS 的开发协议和通过验证的载体基础。它不实现消费者品牌 UI、精简消费组合、Launcher、安装、卸载、修复、备份、凭据 vault、介质制作或离线 DevKit；也不加入签名、更新服务或 DRM，不构成可销售产品。
+本工作区交付面向 Windows 10/11 x64 与 NTFS 的开发协议和通过验证的载体基础，以及从已校验元数据通往品牌化客户端构建的 `client-env` 桥梁。发布方品牌与精简消费组合本身不在本工作区内，见 [发布方品牌与消费端组合](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。
+
+它不实现 Launcher、安装、卸载、修复、备份、凭据 vault、介质制作或离线 DevKit；也不加入签名、更新服务或 DRM，不构成可销售产品。
 
 完整产品仍处于 [便携智能体实验盘产品](../../.agents/notes/proposed/feature/2026-09-11-portable-agent-usb-product.zh.md) 提案阶段。已实现的协议、威胁边界与载体选择记录在 [便携产品元数据与 SEA 载体](../../.agents/notes/implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.zh.md)。

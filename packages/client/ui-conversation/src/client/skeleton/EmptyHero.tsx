@@ -150,8 +150,11 @@ export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
             })}
           </span>
           <span className={css.titleGroup}>
-            {/* Own element: keeps the headline text addressable apart from the badge. */}
-            <span>{t('hero.headline')}</span>
+            {/* Headline sits in the welcome slot so a publisher can replace it;
+                the conversation's own headline remains the absent fallback. */}
+            {renderSlot('conversation.hero.welcome', {}, {
+              fallback: <span>{t('hero.headline')}</span>,
+            })}
             <span className={css.previewBadge}>{t('hero.preview')}</span>
           </span>
         </div>

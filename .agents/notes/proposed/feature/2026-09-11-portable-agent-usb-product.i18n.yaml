@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-09-11-portable-agent-usb-product.md
-2026-09-11-portable-agent-usb-product.md: 690797dae0de29bb8951abd41f8ba027c9c83bc6
-2026-09-11-portable-agent-usb-product.zh.md: d290f966370f56d589663f2141c5461ff0b652f6
+2026-09-11-portable-agent-usb-product.md: 5dbf74c5727f51aa290aa86e01568b4d7eacc53e
+2026-09-11-portable-agent-usb-product.zh.md: 76b3dfa6fcf0e54f3490eecc340bc9d0b8c1cc81

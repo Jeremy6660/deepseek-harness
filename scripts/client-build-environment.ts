@@ -28,6 +28,33 @@ const CLIENT_COMMIT_HASH_VARIABLE = 'DSH_CLIENT_COMMIT_HASH'
 /** Public variable carrying the repository package version embedded in client artifacts. */
 const CLIENT_VERSION_VARIABLE = 'DSH_CLIENT_VERSION'
 
+/** Build profile a publisher-branded product build requests. */
+const PRODUCT_CLIENT_BUILD_PROFILE = 'product'
+
+/** Public variables a publisher-branded product build reads from its orchestration. */
+const PRODUCT_CLIENT_ENV_KEYS = [
+  'DSH_CLIENT_TITLE',
+  'DSH_CLIENT_TITLE_EN',
+  'DSH_CLIENT_TITLE_ZH',
+  'DSH_CLIENT_WELCOME_EN',
+  'DSH_CLIENT_WELCOME_ZH',
+  'DSH_CLIENT_ATTRIBUTION_EN',
+  'DSH_CLIENT_ATTRIBUTION_ZH',
+  'DSH_CLIENT_SUPPORT_EN',
+  'DSH_CLIENT_SUPPORT_ZH',
+  'DSH_CLIENT_PRIMARY_LIGHT',
+  'DSH_CLIENT_PRIMARY_DARK',
+  'DSH_CLIENT_LOGO',
+  CLIENT_COMMIT_HASH_VARIABLE,
+  CLIENT_VERSION_VARIABLE,
+] as const
+
+/** A `#RRGGBB` color accepted for the product primary colors. */
+const PRODUCT_COLOR = /^#[0-9a-f]{6}$/iu
+
+/** The only logo form a publisher-branded build accepts (no remote or scriptable content). */
+const PRODUCT_LOGO_PREFIX = 'data:image/png;base64,'
+
 /** Repository-relative path of the complete client build record. */
 export const CLIENT_BUILD_RECORD_PATH = '.dsh-build/client-build-environment.json'
 
@@ -147,6 +174,56 @@ export function officialClientBuildEnvironment(
   }
 }
 
+/**
+ * Resolve the exact public values required by a publisher-branded product
+ * build. The publisher orchestration has already validated each value against
+ * the closed product schema; this boundary re-checks the shape the bundlers
+ * inline so a malformed value cannot reach published bytes.
+ * @param environment - parent process environment carrying the product values.
+ * @returns the complete product client environment (exact key set).
+ */
+export function productClientBuildEnvironment(
+  environment: NodeJS.ProcessEnv,
+): Readonly<Record<`DSH_CLIENT_${string}`, string>> {
+  const values: Record<string, string> = {}
+  for (const name of PRODUCT_CLIENT_ENV_KEYS) {
+    const value = environment[name]
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new Error(`${name} is required for the product client build profile`)
+    }
+    values[name] = value
+  }
+  const requireValue = (name: string): string => {
+    const value = values[name]
+    if (value === undefined) {
+      throw new Error(`${name} is required for the product client build profile`)
+    }
+    return value
+  }
+  for (const name of ['DSH_CLIENT_PRIMARY_LIGHT', 'DSH_CLIENT_PRIMARY_DARK'] as const) {
+    const color = requireValue(name)
+    if (!PRODUCT_COLOR.test(color)) {
+      throw new Error(`${name} must be a #RRGGBB color; got ${JSON.stringify(color)}`)
+    }
+  }
+  const logo = requireValue('DSH_CLIENT_LOGO')
+  if (!logo.startsWith(PRODUCT_LOGO_PREFIX)) {
+    throw new Error('DSH_CLIENT_LOGO must be a data:image/png;base64, data URI')
+  }
+  const commitHash = requireValue(CLIENT_COMMIT_HASH_VARIABLE)
+  if (!/^[0-9a-f]{7,40}$/iu.test(commitHash)) {
+    throw new Error(`${CLIENT_COMMIT_HASH_VARIABLE} must be a Git commit hash; got ${JSON.stringify(commitHash)}`)
+  }
+  const version = requireValue(CLIENT_VERSION_VARIABLE)
+  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+    throw new Error(`${CLIENT_VERSION_VARIABLE} must be a semantic version; got ${JSON.stringify(version)}`)
+  }
+  return {
+    DSH_CLIENT_BUILD_PROFILE: PRODUCT_CLIENT_BUILD_PROFILE,
+    ...values,
+  }
+}
+
 /** Digest of every client artifact produced by the complete root build. */
 interface ClientArtifactDigest {
   /** Number of files covered by the digest. */
@@ -202,7 +279,8 @@ export function resolveClientBuildEnvironment(
       ...OFFICIAL_CLIENT_BUILD_ENVIRONMENT,
     }
   }
-  throw new Error(`unknown client build profile ${JSON.stringify(profile)}; expected "official"`)
+  if (profile === 'product') return productClientBuildEnvironment(environment)
+  throw new Error(`unknown client build profile ${JSON.stringify(profile)}; expected "official" or "product"`)
 }
 
 /**

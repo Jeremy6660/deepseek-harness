@@ -3,6 +3,7 @@
 
 import { isAbsolute, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { portableClientBuildEnvironment, readProductLogo } from './client-env.ts'
 import { readPortableProductConfig } from './product-config.ts'
 import { sealPortableDistribution, verifyPortableDistribution } from './manifest.ts'
 
@@ -19,7 +20,7 @@ function print(value: unknown): void {
 /** Run one portable build command and set a non-zero exit status for verification issues. */
 export function runPortableCli(args: readonly string[] = process.argv.slice(2)): void {
   const [command, ...rest] = args
-  if (command === undefined) throw new Error('expected validate-product, seal, or verify')
+  if (command === undefined) throw new Error('expected validate-product, seal, verify, or client-env')
   const root = rootArgument(rest)
   switch (command) {
     case 'validate-product':
@@ -36,8 +37,13 @@ export function runPortableCli(args: readonly string[] = process.argv.slice(2)):
       if (!report.valid) process.exitCode = 1
       return
     }
+    case 'client-env': {
+      const config = readPortableProductConfig(join(root, 'product.yml'), root)
+      print(portableClientBuildEnvironment(config, readProductLogo(root, config)))
+      return
+    }
     default:
-      throw new Error(`unknown portable command ${JSON.stringify(command)}; expected validate-product, seal, or verify`)
+      throw new Error(`unknown portable command ${JSON.stringify(command)}; expected validate-product, seal, verify, or client-env`)
   }
 }
 

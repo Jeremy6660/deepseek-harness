@@ -63,7 +63,10 @@ Run the built CLI against an absolute staging root:
 node apps/portable/lib/cli.js validate-product --root C:\absolute\staging
 node apps/portable/lib/cli.js seal --root C:\absolute\staging
 node apps/portable/lib/cli.js verify --root C:\absolute\staging
+node apps/portable/lib/cli.js client-env --root C:\absolute\staging
 ```
+
+`client-env` prints the publisher's `DSH_CLIENT_*` values as the 14-key object the `product` client build profile inlines; it is the bridge from validated metadata to a branded build. Export those values and select `DSH_BUILD_CLIENT_PROFILE=product` when building the client.
 
 Successful commands and verification reports are single-line JSON on standard output. Verification mismatches set exit code 1. Invalid commands, manifests, configurations, roots, or dangerous paths emit a JSON error on standard error and set exit code 2.
 
@@ -83,6 +86,8 @@ node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolut
 
 ## Milestone boundary
 
-This workspace delivers a development protocol and a verified carrier foundation for Windows 10/11 x64 on NTFS. It does not implement consumer branding UI, a reduced consumer composition, Launcher, installation, uninstallation, repair, backup, a credential vault, media preparation, or an offline DevKit. It adds no signing, update service, or DRM and is not a saleable product.
+This workspace delivers a development protocol and a verified carrier foundation for Windows 10/11 x64 on NTFS, plus the `client-env` bridge from validated metadata to the branded client build. The publisher branding and the reduced consumer composition themselves live outside this workspace, in [Publisher branding and consumer composition](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.md).
+
+It does not implement Launcher, installation, uninstallation, repair, backup, a credential vault, media preparation, or an offline DevKit. It adds no signing, update service, or DRM and is not a saleable product.
 
 The broader product remains proposed in [Portable agent USB product](../../.agents/notes/proposed/feature/2026-09-11-portable-agent-usb-product.md). The implemented protocol, threat boundary, and carrier decision are recorded in [Portable product metadata and SEA carrier](../../.agents/notes/implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.md).

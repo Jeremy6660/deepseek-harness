@@ -1,0 +1,39 @@
+# The dsh-consumer-web bundle patch: publisher branding plus a trimmed
+# developer-surface roster, applied after dsh-web-app. A `disabled: true` row
+# only subtracts from the active set — its id stays owned by the web-app layer,
+# so disabling never re-adds a row or moves it between planes.
+
+# Publisher brand occupants. The package self-gates on the `product` client
+# build profile, so a consumer profile built without `product` leaves the
+# official brand (or the declaring shell's fallback) exactly as before.
+- insert:
+    - id: ui-brand-product
+      name: '@deepseek-ai/dsh-client-ui-brand-product'
+
+# ── developer-facing surfaces, removed for the consumer release ─────────────
+#
+# Each row below is a web-app roster row with no consumer role: plugin
+# management, Cordis configuration, HMR, and the experimental Cordis surface
+# are developer tools. Disabling keeps the row's package installed (so the
+# profile still resolves) while removing it from the active set.
+
+- id: plugin-inventory
+  disabled: true
+
+- id: cordis-host-runner
+  disabled: true
+
+- id: cordis-client-runner
+  disabled: true
+
+- id: client-hmr
+  disabled: true
+
+- id: ui-settings-plugin-inventory
+  disabled: true
+
+- id: ui-settings-plugins
+  disabled: true
+
+- id: ui-cordis
+  disabled: true

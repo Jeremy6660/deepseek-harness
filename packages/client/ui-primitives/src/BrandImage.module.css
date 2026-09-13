@@ -1,0 +1,8 @@
+/* Publisher raster marks are arbitrary aspect ratios; contain keeps the box
+ * square while preserving the artwork, and block/flex-none remove the inline
+ * baseline gap so the mark sits cleanly inside a flex row. */
+.image {
+  display: block;
+  flex: none;
+  object-fit: contain;
+}

@@ -52,4 +52,19 @@ describe('portable distribution CLI', () => {
     expect(result.stdout).toBe('')
     expect(JSON.parse(result.stderr)).toEqual({ error: '--root must name an explicit absolute directory' })
   })
+
+  it('prints the publisher-branded client build environment', () => {
+    const result = run('client-env', '--root', fixture())
+    expect(result.status).toBe(0)
+    expect(result.stderr).toBe('')
+    const environment = JSON.parse(result.stdout) as Record<string, string>
+    expect(environment).toMatchObject({
+      DSH_CLIENT_TITLE: '便携智能体实验盘',
+      DSH_CLIENT_TITLE_EN: 'Portable Agent Lab USB',
+      DSH_CLIENT_PRIMARY_LIGHT: '#3366CC',
+      DSH_CLIENT_COMMIT_HASH: '0123456',
+      DSH_CLIENT_VERSION: '1.0.0',
+    })
+    expect(environment.DSH_CLIENT_LOGO).toMatch(/^data:image\/png;base64,/u)
+  })
 })

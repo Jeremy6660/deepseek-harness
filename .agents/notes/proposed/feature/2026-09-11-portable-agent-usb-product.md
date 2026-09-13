@@ -10,7 +10,7 @@ DeepSeek Harness can run from source, as a packaged Desktop application, and thr
 
 The intended product is a student-maintained learning and exchange artifact sold at low margin through an informal marketplace. It needs an honest, bounded promise instead of enterprise licensing, continuous update infrastructure, expensive release signing, arbitrary-project support, or a guarantee that a model completes every task.
 
-The first protocol-and-carrier milestone is implemented in the private `apps/portable` workspace and recorded in [Portable product metadata and SEA carrier](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.md). The consumer product, launcher, installation and repair flows, media tooling, offline DevKit, and sale qualification described by this note remain proposed.
+The first protocol-and-carrier milestone is implemented in the private `apps/portable` workspace and recorded in [Portable product metadata and SEA carrier](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.md); the publisher branding and reduced consumer composition are recorded in [Publisher branding and consumer composition](../../implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.md). The launcher, installation and repair flows, media tooling, offline DevKit, and sale qualification described by this note remain proposed.
 
 ## Proposal
 
@@ -95,10 +95,10 @@ Immutable program, recovery, source, documentation, and license files are manife
 
 ### Implementation sequence
 
-Sequence item 1 is implemented by the protocol-and-carrier milestone linked above. Items 2 through 7 remain proposed.
+Sequence items 1 and 2 are implemented by the milestones linked above. Items 3 through 7 remain proposed.
 
 1. Record the product configuration schema, distribution manifest, filesystem ownership rules, threat limits, and acceptance-test harness. **Implemented.**
-2. Add publisher branding and the reduced consumer composition without changing the underlying client extension contracts.
+2. Add publisher branding and the reduced consumer composition without changing the underlying client extension contracts. **Implemented.**
 3. Add the Windows launcher, portable run, per-user install, uninstall, and explicit state-root selection.
 4. Add full-media preparation, integrity verification, backup, same-version repair, and recovery behavior.
 5. Add the credential vault, no-persistence credential flow, redacted diagnostic export, and explicit data import/export.
