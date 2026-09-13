@@ -14,7 +14,7 @@ Status: implemented
 
 ### 构建期 product profile
 
-`scripts/client-build-environment.ts` 新增 `product` 客户端构建 profile。`productClientBuildEnvironment(environment)` 读取固定键集——`DSH_CLIENT_TITLE`、双语 `DSH_CLIENT_TITLE_EN/ZH`、`DSH_CLIENT_WELCOME_EN/ZH`、`DSH_CLIENT_ATTRIBUTION_EN/ZH`、`DSH_CLIENT_SUPPORT_EN/ZH`、`DSH_CLIENT_PRIMARY_LIGHT`、`DSH_CLIENT_PRIMARY_DARK`、`DSH_CLIENT_LOGO`、`DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_VERSION`——并在打包器内联之前重新校验它们的形状：非空字符串、`#RRGGBB` 颜色、`data:image/png;base64,` Logo 前缀、Git commit hash 与语义版本。缺失或畸形值会使构建立即失败。`official` profile 保持不变。
+`scripts/client-build-environment.ts` 新增 `product` 客户端构建 profile。`productClientBuildEnvironment(environment)` 读取固定键集——`DSH_CLIENT_TITLE`、双语 `DSH_CLIENT_TITLE_EN/ZH`、`DSH_CLIENT_WELCOME_EN/ZH`、`DSH_CLIENT_ATTRIBUTION_EN/ZH`、`DSH_CLIENT_SUPPORT_EN/ZH`、`DSH_CLIENT_PRIMARY_LIGHT`、`DSH_CLIENT_PRIMARY_DARK`、`DSH_CLIENT_LOGO`、`DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_VERSION`——并在打包器内联之前重新校验它们的形状：非空字符串、`#RRGGBB` 颜色、`data:image/png;base64,` Logo 前缀、Git commit hash 与语义版本。缺失或畸形值会使构建立即失败。`official` profile 保持不变。`pnpm run build:product --root <绝对 staging 目录>` 由一份已校验的便携 staging 根目录提供这些取值，发布方无需再把它们重写成 shell 环境变量语法（见[品牌化产品构建入口](../process/2026-09-13-product-branded-build-entry-point.zh.md)）。
 
 ### 品牌包
 

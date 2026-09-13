@@ -66,7 +66,7 @@ node apps/portable/lib/cli.js verify --root C:\absolute\staging
 node apps/portable/lib/cli.js client-env --root C:\absolute\staging
 ```
 
-`client-env` 会输出发布方的 `DSH_CLIENT_*` 值，即 `product` 客户端构建 profile 内联的 14 键对象；它是从已校验元数据通往品牌化构建的桥梁。构建客户端时导出这些值并选择 `DSH_BUILD_CLIENT_PROFILE=product`。
+`client-env` 会输出发布方的 `DSH_CLIENT_*` 值，即 `product` 客户端构建 profile 内联的 14 键对象；它是从已校验元数据通往品牌化构建的桥梁。仓库的 `pnpm run build:product --root C:\absolute\staging` 消费这座桥梁，执行由该 staging 根目录品牌化的完整客户端构建，发布方无需再把取值重写成 shell 环境变量语法。
 
 成功命令和验证报告会在标准输出写出单行 JSON。验证发现差异时退出码为 1；命令、清单、配置、根目录或危险路径无效时，在标准错误写出 JSON 错误并以退出码 2 结束。
 

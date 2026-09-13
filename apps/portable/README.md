@@ -66,7 +66,7 @@ node apps/portable/lib/cli.js verify --root C:\absolute\staging
 node apps/portable/lib/cli.js client-env --root C:\absolute\staging
 ```
 
-`client-env` prints the publisher's `DSH_CLIENT_*` values as the 14-key object the `product` client build profile inlines; it is the bridge from validated metadata to a branded build. Export those values and select `DSH_BUILD_CLIENT_PROFILE=product` when building the client.
+`client-env` prints the publisher's `DSH_CLIENT_*` values as the 14-key object the `product` client build profile inlines; it is the bridge from validated metadata to a branded build. The repository's `pnpm run build:product --root C:\absolute\staging` consumes that bridge and runs the complete client build branded by the staging root, so a publisher never restates the values as shell environment syntax.
 
 Successful commands and verification reports are single-line JSON on standard output. Verification mismatches set exit code 1. Invalid commands, manifests, configurations, roots, or dangerous paths emit a JSON error on standard error and set exit code 2.
 
