@@ -30,6 +30,7 @@ describe('publisher-branded build entry point', () => {
       DSH_CLIENT_VERSION: '1.0.0',
     })
     expect(environment.DSH_CLIENT_LOGO).toMatch(/^data:image\/png;base64,/u)
+    expect(environment.DSH_CLIENT_LOGO_DARK).toMatch(/^data:image\/png;base64,/u)
   })
 
   it('refuses a staging root the product schema cannot read', () => {

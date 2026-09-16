@@ -79,7 +79,7 @@ function isArch(value: string): value is Arch {
 /**
  * A parsed pkg target triple, constructed from `--targets` or the host.
  */
-class Target {
+export class Target {
   private constructor(
     /** pkg Node range (`node<major>`). */
     readonly nodeRange: string,
@@ -149,7 +149,7 @@ class Target {
 /**
  * Validated CLI configuration; construction owns help and parse-error exits.
  */
-class BuildCli {
+export class BuildCli {
   private constructor(
     /** Build targets; defaults to the host platform only. */
     readonly targets: readonly Target[],
@@ -255,17 +255,35 @@ function formatCommand(command: string, args: string[]): string {
 }
 
 /**
+ * The deploy target, pkg input, and product output directory of one SEA build.
+ */
+export interface SingleExeBuildRoots {
+  /** Cleared deploy target holding the pkg input closure. */
+  readonly staging?: string
+  /** Directory the pkg products are written to. */
+  readonly outDir?: string
+}
+
+/**
  * Sequential build pipeline. Subprocesses inherit stdio and errors include
  * the command; dry runs print commands and filesystem changes.
  */
-class SingleExeBuild {
+export class SingleExeBuild {
   /**
-   * The cleared deploy target, pkg input, and Python node-mode carrier.
+   * The cleared deploy target, pkg input, and node-mode carrier.
    */
-  readonly staging = resolve(root, PYTHON_RUNTIME_DIR, PYTHON_NODE_SUBDIR)
-  private readonly outDir = resolve(root, OUT_DIR)
+  readonly staging: string
+  private readonly outDir: string
 
-  constructor(private readonly cli: BuildCli) {}
+  /**
+   * @param cli - Validated build configuration.
+   * @param roots - Deploy and output roots; omitted uses the Python wheel's
+   * staged closure and `dist-exe/`, so a second product cannot overwrite them.
+   */
+  constructor(private readonly cli: BuildCli, roots: SingleExeBuildRoots = {}) {
+    this.staging = roots.staging ?? resolve(root, PYTHON_RUNTIME_DIR, PYTHON_NODE_SUBDIR)
+    this.outDir = roots.outDir ?? resolve(root, OUT_DIR)
+  }
 
   /** Verify the closure before compiling or packaging. */
   async verifyClosure(): Promise<void> {
@@ -626,4 +644,4 @@ async function main(): Promise<void> {
   await pipeline.syncToPythonRuntime(products)
 }
 
-await main()
+if (import.meta.main) await main()
