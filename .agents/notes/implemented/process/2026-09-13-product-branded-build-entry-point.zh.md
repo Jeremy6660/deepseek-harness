@@ -6,7 +6,7 @@ Status: implemented
 
 ## 问题
 
-品牌化客户端构建会内联 14 个来自已校验 `product.yml` 的 `DSH_CLIENT_*` 值。`scripts/client-build-environment.ts` 的 `product` profile 从进程环境读取这些值，缺失任何一个都会明确失败，但仓库里没有任何东西把它们放进去。`apps/portable` 已经提供 `client-env`，它把精确的 14 键对象以 JSON 打印到标准输出；[发布方品牌里程碑](../architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)也把它记录为从已校验元数据通往品牌化构建的桥梁——但这座桥梁的另一端没有消费者。
+品牌化客户端构建会内联 15 个来自已校验 `product.yml` 的 `DSH_CLIENT_*` 值。`scripts/client-build-environment.ts` 的 `product` profile 从进程环境读取这些值，缺失任何一个都会明确失败，但仓库里没有任何东西把它们放进去。`apps/portable` 已经提供 `client-env`，它把精确的 15 键对象以 JSON 打印到标准输出；[发布方品牌里程碑](../architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)也把它记录为从已校验元数据通往品牌化构建的桥梁——但这座桥梁的另一端没有消费者。
 
 缺口在于中间那一步：发布方必须读懂那段 JSON，再在自己的 shell 里把它重写成环境变量，然后才运行构建。这条说明无法跨 shell 移植、无法校验，把仓库命令变成了复制粘贴仪式。发布方若在 README 撰写时所用之外的 shell 上照做，最终得到的是一个只提缺少某个变量、却不提是哪一步丢掉了它的构建错误。
 

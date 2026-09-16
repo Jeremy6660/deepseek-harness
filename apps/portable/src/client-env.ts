@@ -26,12 +26,14 @@ export function productLogoDataUri(logo: Buffer): string {
  * supplies, so it matches `PRODUCT_CLIENT_ENV_KEYS` in the build scripts exactly.
  *
  * @param config - Strict v1 product configuration.
- * @param logo - Validated PNG logo bytes.
- * @returns The 14 public product values, without the profile selector.
+ * @param logo - Validated PNG logo bytes for the light palette.
+ * @param logoDark - Validated PNG logo bytes for the dark palette.
+ * @returns The 15 public product values, without the profile selector.
  */
 export function portableClientBuildEnvironment(
   config: PortableProductConfig,
   logo: Buffer,
+  logoDark: Buffer,
 ): Readonly<Record<string, string>> {
   return {
     DSH_CLIENT_TITLE: config.product.title['zh-CN'],
@@ -46,6 +48,7 @@ export function portableClientBuildEnvironment(
     DSH_CLIENT_PRIMARY_LIGHT: config.branding.primaryColor.light,
     DSH_CLIENT_PRIMARY_DARK: config.branding.primaryColor.dark,
     DSH_CLIENT_LOGO: productLogoDataUri(logo),
+    DSH_CLIENT_LOGO_DARK: productLogoDataUri(logoDark),
     DSH_CLIENT_COMMIT_HASH: config.upstream.revision.slice(0, 7),
     DSH_CLIENT_VERSION: config.product.version,
   }
@@ -59,4 +62,14 @@ export function portableClientBuildEnvironment(
  */
 export function readProductLogo(root: string, config: PortableProductConfig): Buffer {
   return readFileSync(resolvePortablePath(root, config.branding.logo))
+}
+
+/**
+ * Read the validated dark-palette logo asset for one staging root.
+ * @param root - Explicit staging root.
+ * @param config - Configuration naming the local PNG logo.
+ * @returns The validated PNG bytes.
+ */
+export function readProductLogoDark(root: string, config: PortableProductConfig): Buffer {
+  return readFileSync(resolvePortablePath(root, config.branding.logoDark))
 }

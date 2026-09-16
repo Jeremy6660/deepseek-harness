@@ -20,6 +20,7 @@ export interface PortableProductConfig {
   }
   readonly branding: {
     readonly logo: string
+    readonly logoDark: string
     readonly welcome: PortableLocalizedText
     readonly primaryColor: {
       readonly light: string

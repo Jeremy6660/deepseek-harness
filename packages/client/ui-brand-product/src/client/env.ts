@@ -24,11 +24,21 @@ export function required(name: string, value: string | undefined): string {
 }
 
 /**
- * Publisher mark, an inlined data-URI PNG (never a remote URL).
+ * Publisher mark for the light palette, an inlined data-URI PNG (never a
+ * remote URL).
  * @returns the publisher logo data URI.
  */
 export function productLogo(): string {
   return required('DSH_CLIENT_LOGO', process.env.DSH_CLIENT_LOGO)
+}
+
+/**
+ * Publisher mark for the dark palette, an inlined data-URI PNG (never a
+ * remote URL).
+ * @returns the publisher logo data URI.
+ */
+export function productLogoDark(): string {
+  return required('DSH_CLIENT_LOGO_DARK', process.env.DSH_CLIENT_LOGO_DARK)
 }
 
 /**

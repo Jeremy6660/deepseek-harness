@@ -14,11 +14,11 @@ Status: implemented
 
 ### 构建期 product profile
 
-`scripts/client-build-environment.ts` 新增 `product` 客户端构建 profile。`productClientBuildEnvironment(environment)` 读取固定键集——`DSH_CLIENT_TITLE`、双语 `DSH_CLIENT_TITLE_EN/ZH`、`DSH_CLIENT_WELCOME_EN/ZH`、`DSH_CLIENT_ATTRIBUTION_EN/ZH`、`DSH_CLIENT_SUPPORT_EN/ZH`、`DSH_CLIENT_PRIMARY_LIGHT`、`DSH_CLIENT_PRIMARY_DARK`、`DSH_CLIENT_LOGO`、`DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_VERSION`——并在打包器内联之前重新校验它们的形状：非空字符串、`#RRGGBB` 颜色、`data:image/png;base64,` Logo 前缀、Git commit hash 与语义版本。缺失或畸形值会使构建立即失败。`official` profile 保持不变。`pnpm run build:product --root <绝对 staging 目录>` 由一份已校验的便携 staging 根目录提供这些取值，发布方无需再把它们重写成 shell 环境变量语法（见[品牌化产品构建入口](../process/2026-09-13-product-branded-build-entry-point.zh.md)）。
+`scripts/client-build-environment.ts` 新增 `product` 客户端构建 profile。`productClientBuildEnvironment(environment)` 读取固定键集——`DSH_CLIENT_TITLE`、双语 `DSH_CLIENT_TITLE_EN/ZH`、`DSH_CLIENT_WELCOME_EN/ZH`、`DSH_CLIENT_ATTRIBUTION_EN/ZH`、`DSH_CLIENT_SUPPORT_EN/ZH`、`DSH_CLIENT_PRIMARY_LIGHT`、`DSH_CLIENT_PRIMARY_DARK`、`DSH_CLIENT_LOGO`、`DSH_CLIENT_LOGO_DARK`、`DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_VERSION`——并在打包器内联之前重新校验它们的形状：非空字符串、`#RRGGBB` 颜色、两个 Logo 各自的 `data:image/png;base64,` 前缀、Git commit hash 与语义版本。缺失或畸形值会使构建立即失败。`official` profile 保持不变。`pnpm run build:product --root <绝对 staging 目录>` 由一份已校验的便携 staging 根目录提供这些取值，发布方无需再把它们重写成 shell 环境变量语法（见[品牌化产品构建入口](../process/2026-09-13-product-branded-build-entry-point.zh.md)）。
 
 ### 品牌包
 
-新客户端包 `@deepseek-ai/dsh-client-ui-brand-product`（`packages/client/ui-brand-product`）注入 `slots`、`locale` 与 `theme`，并自门控于 `process.env.DSH_CLIENT_BUILD_PROFILE === 'product'`，因此官方品牌包（`ui-brand-official`，门控于 `'official'`）与本包互斥。它注册 `product` locale 命名空间（`title`、`welcome`、`attribution`、`support`），从内联环境组装；把 `--dsw-alias-brand-primary` token 覆盖为发布者明/暗主色；并占据 `sidebar.brand.mark`、`sidebar.brand.name`、`conversation.hero.brand.mark` 以及新的 `conversation.hero.welcome` 插槽。Logo 标记通过新的 `BrandImage` primitive 渲染。
+新客户端包 `@deepseek-ai/dsh-client-ui-brand-product`（`packages/client/ui-brand-product`）注入 `slots`、`locale` 与 `theme`，并自门控于 `process.env.DSH_CLIENT_BUILD_PROFILE === 'product'`，因此官方品牌包（`ui-brand-official`，门控于 `'official'`）与本包互斥。它注册 `product` locale 命名空间（`title`、`welcome`、`attribution`、`support`），从内联环境组装；把 `--dsw-alias-brand-primary` token 覆盖为发布者明/暗主色；并占据 `sidebar.brand.mark`、`sidebar.brand.name`、`conversation.hero.brand.mark` 以及新的 `conversation.hero.welcome` 插槽。Logo 标记通过新的 `BrandImage` primitive 渲染，每种配色各一个，由一条以布局 presenter 已写入的主题属性为限定条件的 CSS module 规则切换。
 
 `ui-primitives` 新增 primitive `BrandImage`，用 `src`、`alt`、`size`、`className` 渲染 `<img src>`；发布者 Logo 是 base64 PNG data URI，因此不涉及任何远程拉取或 HTML/CSS/脚本内容。
 

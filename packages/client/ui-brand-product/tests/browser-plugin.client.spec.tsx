@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
@@ -9,6 +11,9 @@ import { stubSettingsScope, usePinnedBrowserLanguages } from '@deepseek-ai/dsh-c
 import { apply, inject } from '../src/client/index.ts'
 import { apply as hostApply } from '../src/index.ts'
 import { ProductBrandMark, ProductHeroWelcome } from '../src/client/Brand.tsx'
+
+/** Repository-relative path of the stylesheet owning the palette swap. */
+const BRAND_STYLESHEET = 'packages/client/ui-brand-product/src/client/Brand.module.css'
 
 usePinnedBrowserLanguages('en')
 
@@ -32,6 +37,7 @@ const PRODUCT_ENV: Record<string, string> = {
   DSH_CLIENT_PRIMARY_LIGHT: '#123456',
   DSH_CLIENT_PRIMARY_DARK: '#abcdef',
   DSH_CLIENT_LOGO: 'data:image/png;base64,iVBORw0KGgo=',
+  DSH_CLIENT_LOGO_DARK: 'data:image/png;base64,iVBORw0KGgoDARK=',
 }
 
 function stubProductEnv(): void {
@@ -104,13 +110,29 @@ describe('product browser-brand plugin', () => {
       .toBe(PRODUCT_ENV.DSH_CLIENT_PRIMARY_DARK)
   })
 
-  it('renders the publisher logo as an inlined data URI, never a remote URL', () => {
+  it('renders both palette marks as inlined data URIs, never a remote URL', () => {
     stubProductEnv()
     const mark = render(<ProductBrandMark size={34} />)
-    const image = mark.container.querySelector('img') as HTMLImageElement
-    expect(image.src.startsWith('data:image/png;base64,')).toBe(true)
-    expect(image.src.startsWith('http')).toBe(false)
-    expect(image.src).toBe(PRODUCT_ENV.DSH_CLIENT_LOGO)
+    const images = [...mark.container.querySelectorAll('img')] as HTMLImageElement[]
+    expect(images).toHaveLength(2)
+    for (const image of images) {
+      expect(image.src.startsWith('data:image/png;base64,')).toBe(true)
+      expect(image.src.startsWith('http')).toBe(false)
+    }
+    expect(images.map(image => image.src))
+      .toEqual([PRODUCT_ENV.DSH_CLIENT_LOGO, PRODUCT_ENV.DSH_CLIENT_LOGO_DARK])
+    // The stylesheet tells the two apart by class; identical classes would show
+    // both marks at once.
+    expect(images[0]?.className).not.toBe(images[1]?.className)
+  })
+
+  it('qualifies every palette rule by the theme attribute so neither mark leaks', () => {
+    // Read the source rather than import it: the test environment stubs CSS
+    // modules, so an import cannot show what the stylesheet actually says.
+    const source = readFileSync(resolve(process.cwd(), BRAND_STYLESHEET), 'utf8')
+    const selectors = [...source.matchAll(/^([^@/\n][^\n{]*)\{/gmu)].map(match => match[1]!.trim())
+    expect(selectors).toHaveLength(4)
+    for (const selector of selectors) expect(selector).toContain('data-ds-dark-theme')
   })
 
   it('renders the publisher welcome line through the locale seat', () => {

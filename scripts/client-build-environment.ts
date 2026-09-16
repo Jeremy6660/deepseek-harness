@@ -45,6 +45,7 @@ const PRODUCT_CLIENT_ENV_KEYS = [
   'DSH_CLIENT_PRIMARY_LIGHT',
   'DSH_CLIENT_PRIMARY_DARK',
   'DSH_CLIENT_LOGO',
+  'DSH_CLIENT_LOGO_DARK',
   CLIENT_COMMIT_HASH_VARIABLE,
   CLIENT_VERSION_VARIABLE,
 ] as const
@@ -206,9 +207,11 @@ export function productClientBuildEnvironment(
       throw new Error(`${name} must be a #RRGGBB color; got ${JSON.stringify(color)}`)
     }
   }
-  const logo = requireValue('DSH_CLIENT_LOGO')
-  if (!logo.startsWith(PRODUCT_LOGO_PREFIX)) {
-    throw new Error('DSH_CLIENT_LOGO must be a data:image/png;base64, data URI')
+  for (const name of ['DSH_CLIENT_LOGO', 'DSH_CLIENT_LOGO_DARK'] as const) {
+    const logo = requireValue(name)
+    if (!logo.startsWith(PRODUCT_LOGO_PREFIX)) {
+      throw new Error(`${name} must be a data:image/png;base64, data URI`)
+    }
   }
   const commitHash = requireValue(CLIENT_COMMIT_HASH_VARIABLE)
   if (!/^[0-9a-f]{7,40}$/iu.test(commitHash)) {

@@ -26,6 +26,7 @@ publisher:
     zh-CN: 收货后提供 30 天简单售后。
 branding:
   logo: Runtime/win-x64/brand/logo.png
+  logoDark: Runtime/win-x64/brand/logo-dark.png
   welcome:
     en: Welcome to Portable Agent Lab USB.
     zh-CN: 欢迎使用便携智能体实验盘。
@@ -45,6 +46,7 @@ export function writeProductFixture(root: string, order: 'forward' | 'reverse' =
   const files: Array<[string, Buffer | string]> = [
     ['product.yml', productYaml()],
     ['Runtime/win-x64/brand/logo.png', png()],
+    ['Runtime/win-x64/brand/logo-dark.png', png()],
     ['Runtime/win-x64/empty.txt', ''],
     ['Source/说明.txt', 'source'],
     ['Developer/win-x64/tool.txt', 'tool'],

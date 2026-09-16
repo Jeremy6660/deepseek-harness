@@ -1,5 +1,5 @@
 ---
-description: "面向 Web 客户端侧栏与会话首屏的发布者品牌填充，仅在 product 构建中生效；呈现发布者固定的标题、logo、欢迎语与强调色。"
+description: "面向 Web 客户端侧栏与会话首屏的发布者品牌填充，仅在 product 构建中生效；呈现发布者固定的标题、深浅两版 logo、欢迎语与强调色。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-本包在 `product` 客户端构建中呈现发布者品牌。它占据侧栏标志与名称插槽、会话首屏标志与欢迎插槽，注册 `product` locale 命名空间承载发布者的双语标题与欢迎语，并覆盖品牌强调色 token。所有值都在构建期从已校验的 `DSH_CLIENT_*` 环境内联；运行期不存在任何品牌配置面。本包不保留可变状态，也不影响模型请求。
+本包在 `product` 客户端构建中呈现发布者品牌。它占据侧栏标志与名称插槽、会话首屏标志与欢迎插槽，注册 `product` locale 命名空间承载发布者的双语标题与欢迎语，并覆盖品牌强调色 token。每个标志插槽都渲染 logo 的两套配色，由一条以主题属性为键的样式表规则只显示其中一个，因此本包无需读取主题状态即可在两种主题下成立。所有值都在构建期从 `DSH_CLIENT_*` 环境内联；本包不保留可变状态，也不影响模型请求。
 
 ## 目录
 
@@ -25,13 +25,13 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-将本包组合进消费者构建，然后以 `product` profile 构建客户端，让其填充得以注册。`product` profile 要求完整的发布者值集——title/welcome/attribution/support（双语）、主色明暗两套、以及以 data URI 提供的 PNG logo——每一项都在任何字节内联之前由构建编排校验。
+将本包组合进消费者构建，然后以 `product` profile 构建客户端，让其填充得以注册。`product` profile 要求完整的发布者值集——title/welcome/attribution/support（双语）、主色明暗两套、以及每套配色各一份以 data URI 提供的 PNG logo——每一项都在任何字节内联之前由构建编排校验。
 
 ### 品牌在构建期定死的内容
 
 `DSH_CLIENT_BUILD_PROFILE === 'product'` 是唯一的门。当它成立时，本包读取内联的 `DSH_CLIENT_*` 值并：
 
-- 用发布者 logo（`data:image/png;base64,…` URI，绝非远程 URL）占据 `sidebar.brand.mark` 与 `conversation.hero.brand.mark`；
+- 用发布者 logo 的两套配色（`DSH_CLIENT_LOGO` 与 `DSH_CLIENT_LOGO_DARK`，各为 `data:image/png;base64,…` URI，绝非远程 URL）占据 `sidebar.brand.mark` 与 `conversation.hero.brand.mark`，样式表只显示其中之一；
 - 用发布者标题占据 `sidebar.brand.name`，用发布者欢迎语占据 `conversation.hero.welcome`；
 - 注册 `product` locale 命名空间，承载双语 title/welcome/attribution/support；
 - 用发布者的明暗强调色覆盖 `--dsw-alias-brand-primary`。
@@ -55,6 +55,8 @@ kind: "package-reference"
 <summary>实现细节——点击展开</summary>
 
 浏览器半部通过字面量 `process.env.DSH_CLIENT_*` 访问读取内联环境（[`src/client/env.ts`](src/client/env.ts)），并在 [`src/client/locales.ts`](src/client/locales.ts) 中组装双语字典。填充以两组声明感知的注册安装——每个声明包一组——通过嵌套的 `ctx.slots.inject()` 调用完成，因此无论本行在声明者之前还是之后激活，每组都能工作，并在卸载时一并撤回。locale 字典与主题 token 覆盖都通过 `ctx.effect` 安装，其 disposer 随插件一起卸载。node 半部是一个空 Loader 座位。浏览器标题仍是构建环境的事（`DSH_CLIENT_TITLE`），不在 slot 系统之内。
+
+配色切换由 [`src/client/Brand.module.css`](src/client/Brand.module.css) 承担。每个标志填充渲染两个 `BrandImage`，每套配色一个，样式表在 `body:not([data-ds-dark-theme])` 与 `body[data-ds-dark-theme]` 下设置它们的 `display`——那个属性由 `ui-layout` 的主题 presenter 写入。被隐藏的一方是 `display: none` 而非透明，这样它会离开侧栏的 flex 行、不占间隙；每条选择器都带 `body` 属性，因此压过宿主外壳提供的单类名规则。没有任何组件订阅 `theme/change`，一次主题切换只花一次样式重算，不触发重渲染。
 
 </details>
 
@@ -90,6 +92,7 @@ kind: "package-reference"
 - **品牌在构建期定死**——发布者身份、文案、颜色与 logo 已内联；运行期没有任何面可以改变它们。
 - **只有一组填充**——替代呈现属于占据相同插槽的另一个 Cordis 包。
 - **浏览器标题独立**——`DSH_CLIENT_TITLE` 在构建时选择标题文本，而非通过 UI slot。
+- **配色切换跟随主题属性而非主题服务**——宿主外壳若不渲染 `data-ds-dark-theme` 属性，两种主题下都会显示浅色版标志。
 
 <a id="dev-note"></a>
 ### 开发备注

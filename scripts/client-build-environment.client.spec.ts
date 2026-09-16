@@ -156,6 +156,7 @@ describe('client build environment', () => {
       DSH_CLIENT_PRIMARY_LIGHT: '#3366CC',
       DSH_CLIENT_PRIMARY_DARK: '#6699FF',
       DSH_CLIENT_LOGO: 'data:image/png;base64,iVBORw0KGgo=',
+      DSH_CLIENT_LOGO_DARK: 'data:image/png;base64,iVBORw0KGgo=',
       DSH_CLIENT_COMMIT_HASH: COMMIT_HASH.slice(0, 7),
       DSH_CLIENT_VERSION: '1.0.0',
     }
@@ -178,7 +179,9 @@ describe('client build environment', () => {
     expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_PRIMARY_LIGHT: 'red' }) })
       .toThrow(/#RRGGBB/)
     expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_LOGO: 'https://example.com/logo.png' }) })
-      .toThrow(/data URI/)
+      .toThrow(/DSH_CLIENT_LOGO must be a data:image\/png;base64, data URI/)
+    expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_LOGO_DARK: 'https://example.com/logo.png' }) })
+      .toThrow(/DSH_CLIENT_LOGO_DARK must be a data:image\/png;base64, data URI/)
     expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_COMMIT_HASH: 'not-a-hash' }) })
       .toThrow(/commit hash/)
     expect(() => { productClientBuildEnvironment({ ...product, DSH_CLIENT_VERSION: 'current' }) })

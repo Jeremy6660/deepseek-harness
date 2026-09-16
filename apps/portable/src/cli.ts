@@ -3,7 +3,7 @@
 
 import { isAbsolute, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
-import { portableClientBuildEnvironment, readProductLogo } from './client-env.ts'
+import { portableClientBuildEnvironment, readProductLogo, readProductLogoDark } from './client-env.ts'
 import { readPortableProductConfig } from './product-config.ts'
 import { sealPortableDistribution, verifyPortableDistribution } from './manifest.ts'
 
@@ -39,7 +39,7 @@ export function runPortableCli(args: readonly string[] = process.argv.slice(2)):
     }
     case 'client-env': {
       const config = readPortableProductConfig(join(root, 'product.yml'), root)
-      print(portableClientBuildEnvironment(config, readProductLogo(root, config)))
+      print(portableClientBuildEnvironment(config, readProductLogo(root, config), readProductLogoDark(root, config)))
       return
     }
     default:

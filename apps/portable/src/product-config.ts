@@ -49,27 +49,29 @@ function publisher(value: unknown): PortableProductConfig['publisher'] {
   return { name: text(item.name, 'publisher.name'), support: localized(item.support, 'publisher.support') }
 }
 
-function assertPng(assetRoot: string, path: string): void {
+function assertPng(assetRoot: string, field: string, path: string): void {
   portablePathSegments(path)
-  if (!path.toLowerCase().endsWith('.png')) throw new Error('product.yml branding.logo must name a local PNG file')
+  if (!path.toLowerCase().endsWith('.png')) throw new Error(`product.yml ${field} must name a local PNG file`)
   requireUnlinkedFile(assetRoot, path)
   const body = readFileSync(resolvePortablePath(assetRoot, path))
   if (body.byteLength < 24 || !body.subarray(0, PNG_SIGNATURE.byteLength).equals(PNG_SIGNATURE)
     || body.subarray(12, 16).toString('ascii') !== 'IHDR' || body.readUInt32BE(16) === 0 || body.readUInt32BE(20) === 0) {
-    throw new Error('product.yml branding.logo must contain a PNG image with a valid header')
+    throw new Error(`product.yml ${field} must contain a PNG image with a valid header`)
   }
 }
 
 function branding(value: unknown, assetRoot: string): PortableProductConfig['branding'] {
-  const item = record(value, 'branding', ['logo', 'welcome', 'primaryColor'])
+  const item = record(value, 'branding', ['logo', 'logoDark', 'welcome', 'primaryColor'])
   const logo = text(item.logo, 'branding.logo')
-  assertPng(assetRoot, logo)
+  assertPng(assetRoot, 'branding.logo', logo)
+  const logoDark = text(item.logoDark, 'branding.logoDark')
+  assertPng(assetRoot, 'branding.logoDark', logoDark)
   const colors = record(item.primaryColor, 'branding.primaryColor', ['light', 'dark'])
   const light = text(colors.light, 'branding.primaryColor.light')
   const dark = text(colors.dark, 'branding.primaryColor.dark')
   if (!COLOR.test(light)) throw new Error('product.yml branding.primaryColor.light must be a #RRGGBB color')
   if (!COLOR.test(dark)) throw new Error('product.yml branding.primaryColor.dark must be a #RRGGBB color')
-  return { logo, welcome: localized(item.welcome, 'branding.welcome'), primaryColor: { light, dark } }
+  return { logo, logoDark, welcome: localized(item.welcome, 'branding.welcome'), primaryColor: { light, dark } }
 }
 
 function upstream(value: unknown): PortableProductConfig['upstream'] {

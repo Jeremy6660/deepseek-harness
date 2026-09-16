@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-13-product-branded-build-entry-point.md
-2026-09-13-product-branded-build-entry-point.md: 653901e91e68f3ebd38ca594d64ff2fcc0cac20b
-2026-09-13-product-branded-build-entry-point.zh.md: aff72575ce419df386f98391ce660896f9374020
+2026-09-13-product-branded-build-entry-point.md: 675f78258736613c5ce3b141f4ee6ada7758830c
+2026-09-13-product-branded-build-entry-point.zh.md: 250618d054e979b143c669213997931e504a7009

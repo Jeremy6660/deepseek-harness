@@ -1,0 +1,27 @@
+/* A publisher mark is a single-ink raster on transparency: the light palette's
+ * ink disappears on the dark palette's ground, so a product build ships both
+ * and the resolved theme picks the visible one. Every rule is qualified by the
+ * `body` attribute the theme presenter owns, which keeps the swap correct
+ * against the host-supplied class a slot may add — `ui-layout` writes
+ * `body[data-ds-dark-theme]` from the resolved snapshot, and the alias-token
+ * sheets key off the same selector.
+ *
+ * Both marks stay mounted and the hidden one is `display: none` rather than
+ * merely invisible, so it leaves the sidebar's flex row entirely and adds no
+ * gap. No component reads the theme, so no re-render accompanies a switch. */
+
+:global(body:not([data-ds-dark-theme])) .lightMark {
+  display: block;
+}
+
+:global(body:not([data-ds-dark-theme])) .darkMark {
+  display: none;
+}
+
+:global(body[data-ds-dark-theme]) .lightMark {
+  display: none;
+}
+
+:global(body[data-ds-dark-theme]) .darkMark {
+  display: block;
+}

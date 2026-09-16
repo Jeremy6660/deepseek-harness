@@ -25,12 +25,17 @@ describe('portable product config', () => {
     expect(config).toMatchObject({
       schemaVersion: 1,
       product: { id: 'portable-agent-lab-usb', version: '1.0.0' },
-      branding: { primaryColor: { light: '#3366CC', dark: '#6699FF' } },
+      branding: {
+        logo: 'Runtime/win-x64/brand/logo.png',
+        logoDark: 'Runtime/win-x64/brand/logo-dark.png',
+        primaryColor: { light: '#3366CC', dark: '#6699FF' },
+      },
     })
   })
 
   it.each([
     ['missing field', productYaml().replace('  name: Example Student Publisher\n', ''), /publisher\.name is required/u],
+    ['missing dark logo', productYaml().replace('  logoDark: Runtime/win-x64/brand/logo-dark.png\n', ''), /branding\.logoDark is required/u],
     ['unknown field', `${productYaml()}unknown: true\n`, /unknown field "unknown"/u],
     ['custom YAML tag', productYaml().replace('schemaVersion: 1', 'schemaVersion: !!js/function function () {}'), /plain JSON-compatible YAML/u],
     ['invalid version', productYaml().replace('version: 1.0.0', 'version: current'), /valid semantic version/u],
@@ -39,6 +44,7 @@ describe('portable product config', () => {
     ['remote logo', productYaml().replace('Runtime/win-x64/brand/logo.png', 'https://example.com/logo.png'), /relative path/u],
     ['traversing logo', productYaml().replace('Runtime/win-x64/brand/logo.png', '../logo.png'), /traversing segments/u],
     ['SVG logo', productYaml().replace('Runtime/win-x64/brand/logo.png', 'Runtime/win-x64/brand/logo.svg'), /local PNG/u],
+    ['dark SVG logo', productYaml().replace('Runtime/win-x64/brand/logo-dark.png', 'Runtime/win-x64/brand/logo-dark.svg'), /branding\.logoDark must name a local PNG/u],
   ])('rejects %s', (_name, source, pattern) => {
     expect(() => parsePortableProductConfig(source, fixture())).toThrow(pattern)
   })
@@ -46,7 +52,7 @@ describe('portable product config', () => {
   it('rejects a non-PNG file and a linked asset directory', () => {
     const root = fixture()
     writeFileSync(join(root, 'Runtime/win-x64/brand/logo.png'), 'not png')
-    expect(() => parsePortableProductConfig(productYaml(), root)).toThrow(/valid header/u)
+    expect(() => parsePortableProductConfig(productYaml(), root)).toThrow(/branding\.logo must contain a PNG image/u)
 
     const other = join(root, 'other')
     mkdirSync(other)
@@ -60,5 +66,12 @@ describe('portable product config', () => {
       if (error instanceof Error && 'code' in error && error.code === 'EPERM') return
       throw error
     }
+  })
+
+  it('names the dark logo field when only its content is malformed', () => {
+    const root = fixture()
+    writeFileSync(join(root, 'Runtime/win-x64/brand/logo-dark.png'), 'not png')
+    expect(() => parsePortableProductConfig(productYaml(), root))
+      .toThrow(/branding\.logoDark must contain a PNG image/u)
   })
 })
