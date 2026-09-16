@@ -4,8 +4,9 @@
  * Rendering is separate from input so the presented facts can be asserted
  * without a terminal: the header, the menu, and the integrity detail are pure
  * functions of state and copy. The one thing this interface offers is the
- * product's own identity, its attribution, its documents, and two run modes —
- * it has no update, rollback, brand-editing, or plugin-installation action.
+ * product's own identity, its attribution, its documents, where its state will
+ * live, and two run modes — it has no update, rollback, brand-editing, or
+ * plugin-installation action.
  */
 
 import { existsSync } from 'node:fs'
@@ -17,12 +18,13 @@ import type { DistributionLayout } from './layout.ts'
 import { format, type MessageDictionary } from './messages.ts'
 import type { ResolvedRoots } from './settings.ts'
 import { openDirectory } from './shell-open.ts'
+import { applyStateRootChoice, STATE_ROOT_REASON } from './state-root-choice.ts'
 
 /** Detail lines the integrity entry prints before it stops listing. */
 export const INTEGRITY_DETAIL_LIMIT = 20
 
 /** What a menu entry does. */
-export type MenuAction = 'run' | 'guide' | 'licenses' | 'integrity' | 'quit'
+export type MenuAction = 'run' | 'guide' | 'licenses' | 'integrity' | 'stateRoot' | 'quit'
 
 /** One selectable menu entry. */
 export interface MenuEntry {
@@ -40,6 +42,7 @@ export const MENU_ENTRIES: readonly MenuEntry[] = [
   { input: '2', action: 'guide', label: 'menu.guide' },
   { input: '3', action: 'licenses', label: 'menu.licenses' },
   { input: '4', action: 'integrity', label: 'menu.integrity' },
+  { input: '5', action: 'stateRoot', label: 'menu.stateRoot' },
   { input: '0', action: 'quit', label: 'menu.quit' },
 ]
 
@@ -177,6 +180,25 @@ export async function runMenu(
       current = { ...current, integrity: inspectDistribution(layout.root) }
       write(renderIntegritySummary(current.integrity, messages))
       for (const line of renderIntegrityDetail(current.integrity, messages)) write(line)
+      await pause(write, ask, messages)
+      continue
+    }
+    if (action === 'stateRoot') {
+      const answer = await ask(messages['stateRoot.prompt'])
+      if (answer === undefined) return current
+      const choice = applyStateRootChoice(answer, layout, current.mode === 'installed')
+      if (choice.defect !== undefined) {
+        write(format(messages['stateRoot.refused'], {
+          reason: messages[STATE_ROOT_REASON[choice.defect]],
+          input: answer,
+        }))
+      } else {
+        current = { ...current, roots: choice.roots }
+        write(format(answer.trim() === '' ? messages['stateRoot.cleared'] : messages['stateRoot.set'], {
+          settings: choice.path,
+          path: choice.roots.home,
+        }))
+      }
       await pause(write, ask, messages)
       continue
     }

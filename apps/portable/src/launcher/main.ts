@@ -15,16 +15,9 @@ import { detectRunMode } from './install-record.ts'
 import { inspectDistribution } from './integrity.ts'
 import { distributionLayout, distributionRootOf, launcherSettingsPath } from './layout.ts'
 import { runMenu, type MenuState } from './menu.ts'
-import { format, launcherMessages, type MessageDictionary, type MessageKey } from './messages.ts'
-import { readLauncherSettings, resolveLaunchRoots, type StateRootDefect } from './settings.ts'
-
-/** Localized explanation for each way a stored state root can be refused. */
-const STATE_ROOT_REASON: Readonly<Record<StateRootDefect, MessageKey>> = {
-  empty: 'stateRoot.empty',
-  'filesystem-root': 'stateRoot.filesystemRoot',
-  'contains-program': 'stateRoot.containsProgram',
-  'inside-program': 'stateRoot.insideProgram',
-}
+import { format, launcherMessages, type MessageDictionary } from './messages.ts'
+import { readLauncherSettings, resolveLaunchRoots } from './settings.ts'
+import { STATE_ROOT_REASON } from './state-root-choice.ts'
 
 /**
  * Resolve the distribution root, read the inlined identity, and present the menu.

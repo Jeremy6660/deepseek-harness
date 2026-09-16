@@ -126,7 +126,10 @@ The launcher presents the product title, welcome, upstream attribution, and publ
 | Open the Simplified Chinese guide | Hands `Docs/zh-CN/` to the shell |
 | View licenses and third-party notices | Hands `Licenses/` to the shell |
 | Check distribution integrity again | Re-runs verification and lists up to 20 differing files |
+| Set the state directory | Stores a typed directory as the next launch's Harness home, or restores the mode default on an empty line |
 | Quit | Exits |
+
+The state-directory entry writes the choice and reports the roots the next launch will use; it never rewrites a value it refused. A refused directory leaves the stored choice unchanged and names the rule it broke. The header always shows what the next launch will use, so a stored choice that no longer resolves is visible before anything starts.
 
 It offers no update, rollback, brand editing, or plugin installation, and it starts no command the user can supply: the executable comes from the layout, the profile and flags are fixed, and the only URL it will hand to the operating system is an authenticated `http://127.0.0.1/` root URL it validated itself.
 

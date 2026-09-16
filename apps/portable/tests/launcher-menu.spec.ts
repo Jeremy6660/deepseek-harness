@@ -1,5 +1,7 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import type { LauncherIdentity } from '../src/launcher/identity.ts'
 import type { IntegrityReport } from '../src/launcher/integrity.ts'
 import { distributionLayout } from '../src/launcher/layout.ts'
@@ -19,6 +21,13 @@ import type { PortableVerificationIssue } from '../src/types.ts'
 
 const messages = launcherMessages('en')
 const zh = launcherMessages('zh-CN')
+
+/** Temporary distribution roots this file created, removed after each test. */
+const created: string[] = []
+
+afterEach(() => {
+  for (const root of created.splice(0)) rmSync(root, { recursive: true, force: true })
+})
 
 const identity: LauncherIdentity = {
   title: 'Portable Agent Lab USB',
@@ -45,6 +54,7 @@ function state(integrity: IntegrityReport = { status: 'verified', issues: [], mi
 describe('menu selection', () => {
   it('maps a listed number to its action and ignores everything else', () => {
     expect(menuActionFor(' 1 ')).toBe('run')
+    expect(menuActionFor('5')).toBe('stateRoot')
     expect(menuActionFor('0')).toBe('quit')
     expect(menuActionFor('9')).toBeUndefined()
     expect(menuActionFor('')).toBeUndefined()
@@ -97,12 +107,13 @@ describe('integrity presentation', () => {
 })
 
 describe('menu rendering', () => {
-  it('numbers every entry and offers nothing beyond the five', () => {
+  it('numbers every entry and offers nothing beyond the six', () => {
     expect(renderMenu(messages)).toEqual([
       '  1) Start the local application',
       '  2) Open the Simplified Chinese guide',
       '  3) View licenses and third-party notices',
       '  4) Check distribution integrity again',
+      '  5) Set the state directory',
       '  0) Quit',
     ])
   })
@@ -112,13 +123,14 @@ describe('menu rendering', () => {
 async function drive(
   answers: readonly (string | undefined)[],
   initial: MenuState = state(),
+  root: string = join('D:', 'AgentLab'),
 ): Promise<{ readonly lines: string[]; readonly final: MenuState }> {
   const lines: string[] = []
   const pending = [...answers]
   const final = await runMenu(initial, messages, {
     write: line => lines.push(line),
     ask: async () => pending.shift(),
-    layout: distributionLayout(join('D:', 'AgentLab')),
+    layout: distributionLayout(root),
   })
   return { lines, final }
 }
@@ -149,5 +161,32 @@ describe('menu loop', () => {
     const { lines, final } = await drive(['4', '', '0'])
     expect(lines.join('\n')).toContain('Not sealed:')
     expect(final.integrity.status).toBe('unsealed')
+  })
+
+  it('stores a chosen state directory and presents it in the next header', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-menu-state-'))
+    created.push(root)
+    const chosen = join(root, 'PortableData', 'state')
+    const { lines, final } = await drive(['5', chosen, '', '0'], state(), root)
+    expect(final.roots.home).toBe(chosen)
+    expect(lines.join('\n')).toContain(chosen)
+    expect(JSON.parse(readFileSync(join(root, 'PortableData', 'launcher.json'), 'utf8')).stateRoot).toBe(chosen)
+  })
+
+  it('reports a refused state directory in place and leaves the stored roots alone', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-menu-state-'))
+    created.push(root)
+    const { lines, final } = await drive(['5', root, '', '0'], state(), root)
+    expect(lines.join('\n')).toContain(messages['stateRoot.containsProgram'])
+    expect(final.roots.home).toBe(roots.home)
+    expect(existsSync(join(root, 'PortableData', 'launcher.json'))).toBe(false)
+  })
+
+  it('restores the default state directory on an empty line', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-menu-state-'))
+    created.push(root)
+    const chosen = join(root, 'PortableData', 'state')
+    const { final } = await drive(['5', chosen, '', '5', '', '', '0'], state(), root)
+    expect(final.roots.home).toBe(distributionLayout(root).portableHome)
   })
 })

@@ -99,7 +99,7 @@ Sequence items 1 and 2 are implemented by the milestones linked above. Items 3 t
 
 1. Record the product configuration schema, distribution manifest, filesystem ownership rules, threat limits, and acceptance-test harness. **Implemented.**
 2. Add publisher branding and the reduced consumer composition without changing the underlying client extension contracts. **Implemented.**
-3. Add the Windows launcher, portable run, per-user install, uninstall, and explicit state-root selection.
+3. Add the Windows launcher, portable run, per-user install, uninstall, and explicit state-root selection. The launcher, the portable run, and explicit state-root selection are implemented; the per-user install and uninstall flows are not, though the install record, the ASCII install-directory name, the registry uninstall entry, and the removal-target guard that they consume are already written.
 4. Add full-media preparation, integrity verification, backup, same-version repair, and recovery behavior.
 5. Add the credential vault, no-persistence credential flow, redacted diagnostic export, and explicit data import/export.
 6. Assemble and verify the Windows offline DevKit and its ordinary rebuild path.

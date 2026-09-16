@@ -25,8 +25,13 @@ export type MessageKey =
   | 'menu.guide'
   | 'menu.licenses'
   | 'menu.integrity'
+  | 'menu.stateRoot'
   | 'menu.quit'
   | 'menu.invalid'
+  | 'stateRoot.prompt'
+  | 'stateRoot.cleared'
+  | 'stateRoot.set'
+  | 'stateRoot.refused'
   | 'integrity.verified'
   | 'integrity.unsealed'
   | 'integrity.damaged'
@@ -68,8 +73,13 @@ const ZH_CN: MessageDictionary = {
   'menu.guide': '打开中文使用指南',
   'menu.licenses': '查看许可与第三方声明',
   'menu.integrity': '重新检查发行完整性',
+  'menu.stateRoot': '设置状态目录',
   'menu.quit': '退出',
   'menu.invalid': '无法识别该序号，请重新输入。',
+  'stateRoot.prompt': '请输入状态目录的完整路径；直接回车恢复默认目录：',
+  'stateRoot.cleared': '已恢复默认状态目录：{path}',
+  'stateRoot.set': '状态目录已保存到 {settings}，下次启动生效：{path}',
+  'stateRoot.refused': '该目录不可用（{reason}），设置未改动：{input}',
   'integrity.verified': '已校验：全部文件与封存清单一致',
   'integrity.unsealed': '未封存：缺少 {names}，无法比对文件内容（开发用目录）',
   'integrity.damaged': '已损坏：{count} 个受管文件与封存清单不一致',
@@ -109,8 +119,13 @@ const EN: MessageDictionary = {
   'menu.guide': 'Open the Simplified Chinese guide',
   'menu.licenses': 'View licenses and third-party notices',
   'menu.integrity': 'Check distribution integrity again',
+  'menu.stateRoot': 'Set the state directory',
   'menu.quit': 'Quit',
   'menu.invalid': 'That is not one of the listed numbers. Try again.',
+  'stateRoot.prompt': 'Enter the full path of the state directory, or press Enter to restore the default: ',
+  'stateRoot.cleared': 'The default state directory is in use again: {path}',
+  'stateRoot.set': 'State directory saved to {settings}; it applies to the next launch: {path}',
+  'stateRoot.refused': 'That directory cannot be used ({reason}); the setting is unchanged: {input}',
   'integrity.verified': 'Verified: every file matches the sealed manifest',
   'integrity.unsealed': 'Not sealed: {names} is missing, so file contents cannot be compared (development directory)',
   'integrity.damaged': 'Damaged: {count} managed file(s) differ from the sealed manifest',
