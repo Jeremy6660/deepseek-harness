@@ -185,6 +185,38 @@ function clientExportOf(pkgName: string, exportsField: unknown): string | undefi
   throw new Error(`client-modules: ${pkgName} exports["./client"] must be a string or an object with a string default`)
 }
 
+/** How many module-proxy redirects one package lookup follows before giving up. */
+const MODULE_PROXY_REDIRECT_LIMIT = 4
+
+/**
+ * The module URL a dsh module proxy redirects to, or undefined when the parsed
+ * manifest is a real package.
+ *
+ * A packaged executable cannot point a symlink into pkg's virtual filesystem,
+ * so the installation fallback materializes each package it carries as a proxy
+ * directory: a generated manifest holding only redirect targets, plus one
+ * `entry-N.js` re-export shim per target. Everything the module table reads —
+ * the `dsh.client` declaration and the `./client` bundle path — belongs to the
+ * manifest the proxy redirects to, and the shims this registry would otherwise
+ * mistake for the bundle are ESM re-exports rather than plugin factories.
+ *
+ * @param manifest - the parsed candidate manifest.
+ * @returns the package-root target URL, or undefined for a real package.
+ */
+function moduleProxyTarget(manifest: { name?: unknown; dsh?: unknown }): string | undefined {
+  const dsh = manifest.dsh
+  if (typeof dsh !== 'object' || dsh === null) return undefined
+  const fallback = (dsh as Record<string, unknown>).moduleFallback
+  if (typeof fallback !== 'object' || fallback === null) return undefined
+  const targets = (fallback as Record<string, unknown>).targets
+  if (typeof targets !== 'object' || targets === null) return undefined
+  const root = (targets as Record<string, unknown>)['.']
+  if (typeof root === 'string') return root
+  // A package exporting no root subpath still redirects through its remaining
+  // targets; the first is the package's own nearest module.
+  return Object.values(targets as Record<string, unknown>).find(value => typeof value === 'string')
+}
+
 /** sha1 content hash shortened to 12 hex chars (combo / graph / rebuilt-artifact rev). */
 function shortHash(input: string | Buffer): string {
   return createHash('sha1').update(input).digest('hex').slice(0, HASH_REVISION_LENGTH)
@@ -749,8 +781,10 @@ export class ClientModuleRegistry extends Service {
    * module location is authoritative: the specifier resolves through the same
    * Loader resolution that imported the row's host half — including any
    * active ESM hooks — and the nearest ancestor manifest declaring the name
-   * owns the module. Tree-anchored `require` resolution remains only for
-   * runtimes without Node internals.
+   * owns the module. A manifest that only redirects to that owner (a packaged
+   * executable's module proxy) is followed to the package it stands in for,
+   * which is where the client declaration lives. Tree-anchored `require`
+   * resolution remains only for runtimes without Node internals.
    * @param loaderName - module specifier of the loader row.
    * @param baseUrl - resolution base of the tree that owns the row.
    * @returns the manifest path, or `undefined` when the name resolves to no package root.
@@ -795,6 +829,7 @@ export class ClientModuleRegistry extends Service {
   private nearestPackage(
     moduleUrl: string,
     expectedPackageName?: string,
+    followed: number = 0,
   ): { path: string; packageName: string } | undefined {
     if (!moduleUrl.startsWith('file:')) return undefined
     let dir = dirname(fileURLToPath(moduleUrl))
@@ -802,9 +837,16 @@ export class ClientModuleRegistry extends Service {
       const candidate = join(dir, 'package.json')
       if (existsSync(candidate)) {
         try {
-          const name = (JSON.parse(readFileSync(candidate, 'utf8')) as { name?: unknown }).name
+          const manifest = JSON.parse(readFileSync(candidate, 'utf8')) as { name?: unknown }
+          const name = manifest.name
           if (typeof name === 'string' && (expectedPackageName === undefined || name === expectedPackageName)) {
-            return { path: candidate, packageName: name }
+            const proxyTarget = moduleProxyTarget(manifest)
+            if (proxyTarget === undefined) return { path: candidate, packageName: name }
+            // The module table needs the package, not the shim standing in for
+            // it: only the real manifest carries `dsh.client` and the real
+            // `./client` bundle. Bounded so a redirect chain cannot loop.
+            if (followed >= MODULE_PROXY_REDIRECT_LIMIT) return undefined
+            return this.nearestPackage(proxyTarget, expectedPackageName, followed + 1)
           }
         } catch {
           // An unreadable or malformed intermediate manifest cannot own the

@@ -30,13 +30,14 @@ afterEach(() => {
   root = undefined
 })
 
-/** Create a resolvable package whose client export points at the returned path. */
-function writePackage(
+/** Create a package under one node_modules parent; return its client export path. */
+function writePackageUnder(
+  modulesDir: string,
   packageName: string,
   metadata: Record<string, unknown> = { dsh: { client: { platform: 'web' } } },
 ): string {
   root ??= realpathSync(mkdtempSync(join(tmpdir(), 'dsh-client-modules-')))
-  const pkgRoot = join(root, 'node_modules', ...packageName.split('/'))
+  const pkgRoot = join(modulesDir, ...packageName.split('/'))
   const clientPath = join(pkgRoot, 'lib', 'client.js')
   mkdirSync(pkgRoot, { recursive: true })
   writeFileSync(join(pkgRoot, 'package.json'), JSON.stringify({
@@ -48,6 +49,47 @@ function writePackage(
     ...metadata,
   }))
   return clientPath
+}
+
+/** Create a resolvable package whose client export points at the returned path. */
+function writePackage(
+  packageName: string,
+  metadata: Record<string, unknown> = { dsh: { client: { platform: 'web' } } },
+): string {
+  root ??= realpathSync(mkdtempSync(join(tmpdir(), 'dsh-client-modules-')))
+  return writePackageUnder(join(root, 'node_modules'), packageName, metadata)
+}
+
+/**
+ * Materialize the fallback entry a packaged executable writes for one package:
+ * a directory holding only redirect targets plus one re-export shim per target,
+ * standing in for a package that lives inside the executable's filesystem.
+ * @returns the proxy's root export path.
+ */
+function writeModuleProxy(packageName: string, targets: Record<string, string>): string {
+  root ??= realpathSync(mkdtempSync(join(tmpdir(), 'dsh-client-modules-')))
+  const proxyRoot = join(root, 'node_modules', ...packageName.split('/'))
+  mkdirSync(proxyRoot, { recursive: true })
+  writeFileSync(join(proxyRoot, 'package.json'), JSON.stringify({
+    name: packageName,
+    version: '1.0.0',
+    private: true,
+    type: 'module',
+    exports: Object.fromEntries(Object.keys(targets).map((subpath, index) => [subpath, `./entry-${index}.js`])),
+    dsh: { moduleFallback: { targets } },
+  }))
+  for (const [index, target] of Object.values(targets).entries()) {
+    writeFileSync(join(proxyRoot, `entry-${index}.js`), `export * from ${JSON.stringify(target)}\n`)
+  }
+  return join(proxyRoot, 'entry-0.js')
+}
+
+/** The module proxy targets one real package directory would be reached through. */
+function proxyTargets(realPackageRoot: string): Record<string, string> {
+  return {
+    '.': pathToFileURL(join(realPackageRoot, 'lib', 'index.js')).href,
+    './client': pathToFileURL(join(realPackageRoot, 'lib', 'client.js')).href,
+  }
 }
 
 /** Create a built package with the supplied client declaration. */
@@ -336,6 +378,61 @@ describe('client bundle activation', () => {
       expect(service.graph().entries.map(entry => entry.id)).toEqual([packageName])
     },
   )
+
+  describe('packaged module proxies', () => {
+    /** Create a real client package under a directory standing in for the executable's filesystem. */
+    function writePackagedFixture(packageName: string): { clientPath: string; packageRoot: string } {
+      root ??= realpathSync(mkdtempSync(join(tmpdir(), 'dsh-client-modules-')))
+      const clientPath = writePackageUnder(join(root, 'snapshot', 'node_modules'), packageName)
+      mkdirSync(dirname(clientPath), { recursive: true })
+      writeFileSync(clientPath, `window.__ModuleLoader__.load({ id: ${JSON.stringify(packageName)} })\n`)
+      return { clientPath, packageRoot: dirname(dirname(clientPath)) }
+    }
+
+    it('classifies a proxied package by the manifest behind the proxy, and serves its real bundle', async () => {
+      const packageName = '@fixture/proxied'
+      const { clientPath, packageRoot } = writePackagedFixture(packageName)
+      const proxyEntry = writeModuleProxy(packageName, proxyTargets(packageRoot))
+
+      const { service, route } = constructWithRoute([pathToFileURL(proxyEntry).href])
+
+      // The proxy's own manifest declares no client half and its `./client`
+      // export is a re-export shim, so neither is an acceptable answer.
+      expect(service.clientPath(packageName)).toBe(clientPath)
+      expect(service.graph().entries.map(entry => entry.id)).toEqual([packageName])
+      const served = await routeRequest(route, service.graph().entries[0]!.url)
+      expect(served.body.toString('utf8')).toContain('__ModuleLoader__.load')
+      expect(served.body.toString('utf8')).not.toContain('export * from')
+    })
+
+    it('resolves a proxied package through the Loader resolver of the owning tree', () => {
+      const packageName = '@fixture/proxied-resolved'
+      const { clientPath, packageRoot } = writePackagedFixture(packageName)
+      const proxyEntry = writeModuleProxy(packageName, proxyTargets(packageRoot))
+      const resolveSync = () => ({ format: 'module' as const, url: pathToFileURL(proxyEntry).href })
+
+      const { service } = constructWithRoute([packageName], {
+        internal: { version: 'v2', resolveSync } as unknown as NonNullable<Context['loader']['internal']>,
+      })
+
+      expect(service.clientPath(packageName)).toBe(clientPath)
+      expect(service.graph().entries.map(entry => entry.id)).toEqual([packageName])
+    })
+
+    it('stops at the redirect limit instead of following a proxy cycle', () => {
+      const first = '@fixture/loop-a'
+      const second = '@fixture/loop-b'
+      root ??= realpathSync(mkdtempSync(join(tmpdir(), 'dsh-client-modules-')))
+      const firstEntry = join(root, 'node_modules', ...first.split('/'), 'entry-0.js')
+      const secondEntry = join(root, 'node_modules', ...second.split('/'), 'entry-0.js')
+      writeModuleProxy(first, { '.': pathToFileURL(secondEntry).href })
+      writeModuleProxy(second, { '.': pathToFileURL(firstEntry).href })
+
+      const { service } = constructWithRoute([pathToFileURL(firstEntry).href])
+
+      expect(service.graph().entries).toEqual([])
+    })
+  })
 
   it('rejects distinct active Loader sources for one browser package', () => {
     const packageName = '@fixture/duplicate-source'
