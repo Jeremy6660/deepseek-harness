@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import { valid } from 'semver'
+import { INSTALL_MARKER_NAME, LAUNCHER_BUILD_RECORD_NAME, LAUNCHER_SETTINGS_NAME } from './launcher/layout.ts'
 import { portablePathSegments, resolvePortablePath } from './path-policy.ts'
 import type {
   PortableContentRole,
@@ -40,6 +41,14 @@ function record(value: unknown, path: string, keys: readonly string[]): Record<s
 
 /**
  * Resolve the immutable ownership role encoded by a distribution path.
+ *
+ * Three kinds of path belong to nobody. `PortableData/**` is the user's, and
+ * the manifest pair is the seal itself. The launcher's own two files are the
+ * third: an installed program directory is verified by this same manifest, and
+ * both files appear there only after the copy that the manifest describes, so
+ * counting them as unowned content would make every installed program report
+ * itself as damaged. A medium carries neither, so on a medium the rule is inert.
+ *
  * @param path - Validated slash-separated relative path.
  * @returns Immutable role, or undefined for metadata files and user-owned PortableData.
  * @throws When an immutable path has no supported owner.
@@ -48,8 +57,13 @@ export function portableContentRole(path: string): PortableContentRole | undefin
   const [root, target, ...rest] = portablePathSegments(path)
   if (root === 'PortableData') return undefined
   if (path === PORTABLE_MANIFEST_FILE || path === PORTABLE_MANIFEST_CHECKSUM_FILE) return undefined
+  if (path === INSTALL_MARKER_NAME || path === LAUNCHER_SETTINGS_NAME) return undefined
   if (path === 'Launcher.exe') return 'launcher'
   if (path === 'product.yml') return 'metadata'
+  // The launcher's build record is released alongside the executable it
+  // describes, the same way `Runtime/win-x64/runtime-build.json` is released
+  // with the Runtime. It is immutable content the publisher ships.
+  if (path === LAUNCHER_BUILD_RECORD_NAME) return 'metadata'
   if (root === 'Runtime' && target === 'win-x64' && rest.length > 0) return 'runtime'
   if (root === 'Recovery' && target === 'win-x64' && rest.length > 0) return 'recovery'
   if (root === 'Source' && target !== undefined) return 'source'
@@ -214,6 +228,22 @@ function readTrustedManifest(root: string): PortableDistributionManifest {
   if (match === null) throw new Error('manifest.sha256 must contain one SHA-256 record for manifest.json')
   if (match[1] !== sha256(source)) throw new Error('manifest.sha256 does not match manifest.json')
   return parsePortableDistributionManifest(source)
+}
+
+/**
+ * Read the sealed manifest of one distribution root.
+ *
+ * Installing copies exactly the files a sealed manifest owns, so the copy needs
+ * both the manifest and the proof that it is the one the publisher wrote. A
+ * staging root that carries no seal has neither, and an install refuses it
+ * rather than inferring a file set from whatever the directory happens to hold.
+ *
+ * @param root - Explicit distribution root.
+ * @returns The manifest whose checksum file matches its bytes.
+ * @throws When the root, the metadata, or the checksum is missing or invalid.
+ */
+export function readSealedPortableManifest(root: string): PortableDistributionManifest {
+  return readTrustedManifest(distributionRoot(root))
 }
 
 /**

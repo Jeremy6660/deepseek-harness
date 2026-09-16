@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   parsePortableDistributionManifest,
   portableContentRole,
+  readSealedPortableManifest,
   sealPortableDistribution,
   verifyPortableDistribution,
 } from '../src/manifest.ts'
@@ -120,5 +121,36 @@ describe('portable distribution manifest', () => {
       if (error instanceof Error && 'code' in error && error.code === 'EPERM') return
       throw error
     }
+  })
+})
+
+describe('launcher-owned files beside an installed program', () => {
+  it('gives the install marker and the launcher settings no immutable owner', () => {
+    expect(portableContentRole('install.json')).toBeUndefined()
+    expect(portableContentRole('launcher.json')).toBeUndefined()
+    // A same-named file anywhere else keeps whatever its directory owns.
+    expect(portableContentRole('Docs/zh-CN/install.json')).toBe('documentation')
+    expect(portableContentRole('Runtime/win-x64/launcher.json')).toBe('runtime')
+  })
+
+  it('lets an installed program directory verify clean instead of reporting itself damaged', () => {
+    const root = fixture()
+    seal(root)
+    // Exactly the two files the launcher adds after the copy the manifest
+    // describes; without the rule above both would be reported as unexpected.
+    writeFileSync(join(root, 'install.json'), '{}\n')
+    writeFileSync(join(root, 'launcher.json'), '{}\n')
+    expect(verifyPortableDistribution(root)).toEqual({ valid: true, issues: [] })
+  })
+
+  it('reads the sealed manifest an install copies from', () => {
+    const root = fixture()
+    const sealed = seal(root)
+    expect(readSealedPortableManifest(root)).toEqual(parsePortableDistributionManifest(sealed))
+  })
+
+  it('refuses an unsealed directory rather than inferring a file set', () => {
+    const root = fixture()
+    expect(() => readSealedPortableManifest(root)).toThrow()
   })
 })

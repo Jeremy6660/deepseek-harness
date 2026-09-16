@@ -10,7 +10,7 @@ DeepSeek Harness 可以从源码运行，也可以作为打包后的 Desktop 应
 
 目标产品是由大学生低利润维护、通过非正式交易平台出售的学习交流作品。它需要诚实且有限的承诺，不需要企业许可证、持续更新基础设施、昂贵的发布签名、任意项目支持，也不保证模型完成每项任务。
 
-首个协议与载体里程碑已在私有 `apps/portable` 工作区实现，并记录于[便携产品元数据与 SEA 载体](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.zh.md)；发行方品牌与精简消费组合记录于[发行方品牌与消费端组合](../../implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。本记录描述的 Launcher、安装与修复流程、介质工具、离线 DevKit 和销售资格仍处于提案阶段。
+首个协议与载体里程碑已在私有 `apps/portable` 工作区实现，并记录于[便携产品元数据与 SEA 载体](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.zh.md)；启动器与免安装运行记录于[便携启动器与状态位置](../../implemented/architecture/2026-09-13-portable-launcher-and-state-location.zh.md)；发行方品牌与精简消费组合记录于[发行方品牌与消费端组合](../../implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。本记录描述的安装与修复流程、介质工具、离线 DevKit 和销售资格仍处于提案阶段。
 
 ## 提案
 

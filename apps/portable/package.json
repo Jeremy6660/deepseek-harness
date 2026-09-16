@@ -18,9 +18,11 @@
   },
   "scripts": {
     "build": "tsc -b && tsdown",
+    "build:launcher": "tsx scripts/build-launcher.ts",
     "compare:carriers": "tsx scripts/compare-carriers.ts"
   },
   "dependencies": {
+    "@deepseek-ai/dsh-home-paths": "workspace:^",
     "js-yaml": "^4.2.0",
     "semver": "^7.8.5"
   },

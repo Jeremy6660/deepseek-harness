@@ -22,6 +22,7 @@
     "build:official": "tsx scripts/build.ts --profile official",
     "build:product": "tsx scripts/build-product.ts",
     "build:portable-runtime": "tsx scripts/build-portable-runtime.ts",
+    "build:portable-launcher": "tsx apps/portable/scripts/build-launcher.ts",
     "build:lib": "pnpm run build:lib:host && pnpm run build:lib:client",
     "build:lib:host": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc -b tsconfig.host.json && tsdown --env.DSH_BUILD_FACE host",
     "build:lib:client": "tsc -b tsconfig.client.json && tsdown --env.DSH_BUILD_FACE client",
