@@ -104,7 +104,7 @@ pnpm run build:portable-runtime --root C:\absolute\staging --out C:\absolute\run
 node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolute\runtime\deepseek-harness-sdk-runtime-win-x64.exe --out C:\absolute\carrier-evidence.json
 ```
 
-`--skip-build` reuses the existing `lib/` artifacts instead of running the branded root build. Use it only when those artifacts already belong to the staging root's current metadata.
+`--skip-build` reuses the existing client artifacts instead of running the branded root build. Before deployment, the command verifies that the client build record matches the staging root's product environment and the artifact digests. A missing record, changed artifacts, or different branding fails the build; run a complete branded build to regenerate them.
 
 ## Launcher
 
@@ -175,8 +175,8 @@ node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolut
 
 ## Milestone boundary
 
-This workspace delivers a development protocol and a verified carrier foundation for Windows 10/11 x64 on NTFS, the `client-env` bridge from validated metadata to the branded client build, and the launcher skeleton with the portable run. The publisher branding and the reduced consumer composition themselves live outside this workspace, in [Publisher branding and consumer composition](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.md).
+This workspace delivers a development protocol and a verified carrier foundation for Windows 10/11 x64 on NTFS, the `client-env` bridge from validated metadata to the branded client build, the command that produces the Runtime a distribution ships, and the launcher skeleton with the portable run and its state-root choice. The publisher branding and the reduced consumer composition themselves live outside this workspace, in [Publisher branding and consumer composition](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.md).
 
-Per-user installation, uninstallation, and explicit state-root selection are built on this launcher but are not part of it. The workspace still does not implement repair, backup, a credential vault, media preparation, or an offline DevKit. It adds no signing, update service, or DRM and is not a saleable product.
+Per-user installation and uninstallation are built on this launcher but are not part of it: the install record, the ASCII directory name, the per-user registry entry, and the protected-root checks exist with their tests, and no menu entry drives them yet. The workspace still does not implement repair, backup, a credential vault, media preparation, or an offline DevKit. It adds no signing, update service, or DRM and is not a saleable product.
 
 The broader product remains proposed in [Portable agent USB product](../../.agents/notes/proposed/feature/2026-09-11-portable-agent-usb-product.md). The implemented protocol, threat boundary, and carrier decision are recorded in [Portable product metadata and SEA carrier](../../.agents/notes/implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.md).

@@ -25,7 +25,7 @@
 
 import { createRequire } from 'node:module'
 import {
-  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync,
+  existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, type Stats,
   symlinkSync, unlinkSync, writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
@@ -271,15 +271,37 @@ function ensureProfileSymlink(link: string, target: string): void {
   ensureSymlink(link, target)
 }
 
+/**
+ * Resolve one directory entry's lstat, reporting an entry that no longer exists.
+ * @param path - absolute path of the entry.
+ * @returns the entry's lstat, or undefined when a concurrent cleanup removed it.
+ */
+function entryStatus(path: string): Stats | undefined {
+  try {
+    return lstatSync(path)
+  } catch (error) {
+    // A concurrent cleanup may remove the entry after readdir listed it.
+    /* v8 ignore next 2 -- a non-ENOENT lstat failure requires a host filesystem fault */
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    /* v8 ignore next -- see the host-filesystem exception above */
+    throw error
+  }
+}
+
 /** Package names represented by owned symlinks below one fallback node_modules. */
 function ownedPackageNames(modulesDir: string): string[] {
-  return readdirSync(modulesDir, { withFileTypes: true }).flatMap((entry) => {
-    if (entry.name.startsWith('@') && entry.isDirectory()) {
-      return readdirSync(join(modulesDir, entry.name), { withFileTypes: true })
-        .filter(child => child.isSymbolicLink())
-        .map(child => `${entry.name}/${child.name}`)
+  // Entry types are resolved through lstat rather than Dirent predicates: a
+  // packaged executable answers readdir with plain records inside its snapshot,
+  // so a Dirent method call there fails at run time.
+  return readdirSync(modulesDir).flatMap((name) => {
+    const path = join(modulesDir, name)
+    const status = entryStatus(path)
+    if (name.startsWith('@') && status?.isDirectory() === true) {
+      return readdirSync(path)
+        .filter(child => entryStatus(join(path, child))?.isSymbolicLink() === true)
+        .map(child => `${name}/${child}`)
     }
-    return entry.isSymbolicLink() ? [entry.name] : []
+    return status?.isSymbolicLink() === true ? [name] : []
   })
 }
 

@@ -104,7 +104,7 @@ pnpm run build:portable-runtime --root C:\absolute\staging --out C:\absolute\run
 node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolute\runtime\deepseek-harness-sdk-runtime-win-x64.exe --out C:\absolute\carrier-evidence.json
 ```
 
-`--skip-build` 复用已有的 `lib/` 产物而不执行品牌化根构建；仅当这些产物已对应当前 staging 根目录的元数据时才可使用。
+`--skip-build` 复用已有的客户端产物而不执行品牌化根构建。部署前，命令会校验客户端构建记录是否与 staging 根目录的产品环境及产物摘要一致。记录缺失、产物被修改或品牌不匹配都会使构建失败；请执行完整的品牌化构建来重新生成它们。
 
 ## 启动器
 
@@ -175,8 +175,8 @@ node --import tsx/esm apps/portable/scripts/compare-carriers.ts --sea C:\absolut
 
 ## 里程碑边界
 
-本工作区交付面向 Windows 10/11 x64 与 NTFS 的开发协议和通过验证的载体基础、从已校验元数据通往品牌化客户端构建的 `client-env` 桥梁，以及启动器骨架与免安装运行。发布方品牌与精简消费组合本身不在本工作区内，见 [发布方品牌与消费端组合](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。
+本工作区交付面向 Windows 10/11 x64 与 NTFS 的开发协议和通过验证的载体基础、从已校验元数据通往品牌化客户端构建的 `client-env` 桥梁、生成发行版所携带 Runtime 的命令，以及带状态根选择的启动器骨架与免安装运行。发布方品牌与精简消费组合本身不在本工作区内，见 [发布方品牌与消费端组合](../../.agents/notes/implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。
 
-单用户安装、卸载与显式状态目录选择建立在这个启动器之上，但不属于它。本工作区仍不实现修复、备份、凭据 vault、介质制作或离线 DevKit；也不加入签名、更新服务或 DRM，不构成可销售产品。
+单用户安装与卸载建立在这个启动器之上，但不属于它：装机记录、ASCII 目录名、单用户注册表项与受保护根检查均已存在并带测试，但目前没有任何菜单项驱动它们。本工作区仍不实现修复、备份、凭据 vault、介质制作或离线 DevKit；也不加入签名、更新服务或 DRM，不构成可销售产品。
 
 完整产品仍处于 [便携智能体实验盘产品](../../.agents/notes/proposed/feature/2026-09-11-portable-agent-usb-product.zh.md) 提案阶段。已实现的协议、威胁边界与载体选择记录在 [便携产品元数据与 SEA 载体](../../.agents/notes/implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.zh.md)。

@@ -577,6 +577,11 @@ describe('healProfilesModuleFallback', () => {
     expect(existsSync(join(ownedModules, 'fallback'))).toBe(false)
     expect(existsSync(join(ownedModules, 'managed-dir'))).toBe(false)
     expect(existsSync(join(ownedModules, 'managed-link'))).toBe(false)
+    // Nested non-links stay untouched while the owned scan walks them. A
+    // packaged executable answers readdir with plain records inside its
+    // snapshot, so the owned-name scan resolves entry types through lstat
+    // instead of Dirent predicates.
+    expect(existsSync(join(ownedModules, '@foreign', 'directory'))).toBe(true)
   })
 
   it('cleans owned projections whose junction target uses a canonical parent path', async () => {
