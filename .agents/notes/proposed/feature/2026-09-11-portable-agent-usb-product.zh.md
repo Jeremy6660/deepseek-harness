@@ -12,9 +12,11 @@ DeepSeek Harness 可以从源码运行，也可以作为打包后的 Desktop 应
 
 首个协议与载体里程碑已在私有 `apps/portable` 工作区实现，并记录于[便携产品元数据与 SEA 载体](../../implemented/architecture/2026-09-11-portable-product-metadata-and-sea-carrier.zh.md)；启动器与免安装运行记录于[便携启动器与状态位置](../../implemented/architecture/2026-09-13-portable-launcher-and-state-location.zh.md)；构建发行版所携带 Runtime 的命令记录于[便携 Runtime 构建路径](../../implemented/architecture/2026-09-13-portable-runtime-build-path.zh.md)；启动器的状态根选择记录于[便携状态根选择](../../implemented/feature/2026-09-16-portable-state-root-selection.zh.md)；发行方品牌与精简消费组合记录于[发行方品牌与消费端组合](../../implemented/architecture/2026-09-12-publisher-branding-and-consumer-composition.zh.md)。本记录描述的安装与修复流程、介质工具、离线 DevKit 和销售资格仍处于提案阶段。
 
+目标已确认，不再是提案：发布者真收钱出售、接受低利润与由此产生的售后义务，**没有期限**，也不出售未完成的产品。按用户安装与卸载、介质准备、完整性校验、修复、备份与恢复、凭据保险箱、离线工具包与发布资格全部在范围内，必须实现；下文列出的排除项未变。
+
 ## 提案
 
-基于 DeepSeek Harness 创建使用独立名称的非官方便携智能体 U 盘产品。发行方通过集中式产品配置替换名称前，暂用工作名 **便携智能体实验盘**。产品文案必须说明 DeepSeek 不发布或背书该产品，并标明准确的上游源码 revision。
+基于 DeepSeek Harness 创建使用独立名称的非官方便携智能体 U 盘产品。发布身份是 **X-FUSION**（产品 id `x-fusion`），通过集中式产品配置固定；**便携智能体实验盘** 是已废弃的工作名，仅存于本记录的文件名与符号名中。产品文案必须说明 DeepSeek 不发布或背书该产品，并标明准确的上游源码 revision。
 
 开发过程使用可独立验证的里程碑，但不把任何里程碑作为未完成产品出售。发行方只出售满足完整发布验收条件的构建。每次出售的是固定最终版本，不提供更新服务，也不承诺与后续内容兼容。
 
