@@ -325,6 +325,22 @@ describe('client build environment', () => {
     expect(() => { readClientBuildRecord(official) }).toThrow(/artifacts differ/)
   })
 
+  it('refuses reuse of an official build or a product build with a different logo', () => {
+    const product = {
+      DSH_CLIENT_BUILD_PROFILE: 'product',
+      DSH_CLIENT_TITLE: 'Publisher product',
+      DSH_CLIENT_LOGO: 'data:image/png;base64,bG9nbw==',
+    }
+    const fixture = buildFixture(product)
+    expect(readClientBuildRecord(fixture, product).environment).toEqual(product)
+    expect(() => readClientBuildRecord(fixture, {
+      ...product,
+      DSH_CLIENT_LOGO: 'data:image/png;base64,b3RoZXI=',
+    })).toThrow(/DSH_CLIENT_LOGO/)
+    const official = buildFixture({ ...product, DSH_CLIENT_BUILD_PROFILE: 'official' })
+    expect(() => readClientBuildRecord(official, product)).toThrow(/DSH_CLIENT_BUILD_PROFILE/)
+  })
+
   it('keeps public client values out of workflow-wide environments', () => {
     for (const name of dshBuildWorkflows) {
       const path = `.github/workflows/${name}`

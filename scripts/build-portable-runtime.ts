@@ -22,7 +22,7 @@ import {
   type PortableProductIdentity,
 } from './build-product.ts'
 import { BuildCli, SingleExeBuild, Target } from './build-exe-for-python-sdk.ts'
-import { resolveClientBuildEnvironment } from './client-build-environment.ts'
+import { readClientBuildRecord, resolveClientBuildEnvironment } from './client-build-environment.ts'
 
 const root = resolve(import.meta.dirname, '..')
 
@@ -49,7 +49,7 @@ interface PortableRuntimeCli {
   readonly portableRoot: string
   /** Absolute directory receiving the Runtime executable, sidecar, and record. */
   readonly out: string
-  /** Skip the branded root build; `lib/` artifacts must already exist. */
+  /** Reuse client artifacts whose build record matches the product environment and bytes. */
   readonly skipBuild: boolean
 }
 
@@ -63,7 +63,7 @@ export function usage(): string {
     '',
     '  --root=<path>   absolute staging root holding the validated product.yml.',
     `  --out=<path>    absolute directory receiving the ${PORTABLE_TARGET} Runtime artifacts.`,
-    '  --skip-build    skip the branded root build (lib/ artifacts must already exist).',
+    '  --skip-build    reuse verified client artifacts built for this product.',
     '',
     `Target: ${PORTABLE_TARGET}. Pins, inputs, and artifact digests are recorded in ${RUNTIME_BUILD_RECORD}.`,
   ].join('\n')
@@ -150,6 +150,10 @@ async function main(): Promise<void> {
   const cli = parseCli(process.argv.slice(2))
   const target = Target.parse(PORTABLE_TARGET)
   const identity: PortableProductIdentity = portableProductIdentity(root, cli.portableRoot)
+  const clientEnvironment = resolveClientBuildEnvironment(
+    publisherEnvironment(root, cli.portableRoot),
+    PRODUCT_CLIENT_BUILD_PROFILE,
+  )
   const pipeline = new SingleExeBuild(BuildCli.parse(['--targets', PORTABLE_TARGET, '--skip-build']), {
     staging: join(root, PORTABLE_STAGING),
     outDir: join(root, PORTABLE_PRODUCT_DIR),
@@ -160,8 +164,10 @@ async function main(): Promise<void> {
   if (cli.skipBuild) {
     console.log('build:portable-runtime: skipping the branded root build (--skip-build)')
   } else {
-    runRootBuild(resolveClientBuildEnvironment(publisherEnvironment(root, cli.portableRoot), PRODUCT_CLIENT_BUILD_PROFILE))
+    runRootBuild(clientEnvironment)
   }
+  // Reusing artifacts must prove both the publisher values and the emitted bytes.
+  readClientBuildRecord(root, clientEnvironment)
   await pipeline.deployStaging()
   await pipeline.injectPkgConfig()
   const products = await pipeline.pack(target)

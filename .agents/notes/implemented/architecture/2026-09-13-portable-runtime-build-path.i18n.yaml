@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-13-portable-runtime-build-path.md
-2026-09-13-portable-runtime-build-path.md: 3f293a0839415a04f5f3c97eab06f5e73dd8cfde
-2026-09-13-portable-runtime-build-path.zh.md: 143a60e641808f4da1b6f62d1269df73da44c4c0
+2026-09-13-portable-runtime-build-path.md: 708aa8ed63bb955fe413ca50f1d5e48612a73348
+2026-09-13-portable-runtime-build-path.zh.md: 6455e7c4a4962613c8f747f92f68aa51da882c28
